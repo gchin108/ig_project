@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: "postgres:15.2-alpine"
+      
+    environment:
+      POSTGRES_USER: jojo
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blogdb
+    ports:
+      - "5432:5432"
