@@ -4,7 +4,6 @@ import React from "react";
 
 export default async function CreatePage() {
   const session = await auth();
-  console.log("session", session);
   if (!session?.user) {
     return redirect("/api/auth/signin?callbackUrl=/create");
   }

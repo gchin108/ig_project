@@ -5,8 +5,8 @@ import Image from "next/image";
 export const Navbar = async () => {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
-  console.log("isLoggedIn", isLoggedIn);
-  console.log("session", session);
+  // console.log("isLoggedIn", isLoggedIn);
+  // console.log("session", session);
   return (
     <div className="sticky top-0 flex bg-inherit">
       <div className="ml-auto mr-4 flex items-center gap-4">

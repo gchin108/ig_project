@@ -1,6 +1,5 @@
 import {
   PencilIcon,
-  NotebookIcon,
   HeartIcon,
   MessageCircleIcon,
   HomeIcon,
