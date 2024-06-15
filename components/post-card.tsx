@@ -1,6 +1,12 @@
 "use client";
 import { LikeBtn } from "@/components/like-button";
-import { CommentTable, PostTable, ReplyTable, UserTable } from "@/db/schema";
+import {
+  CommentTable,
+  LikeTable,
+  PostTable,
+  ReplyTable,
+  UserTable,
+} from "@/db/schema";
 import { timeSince } from "@/lib/utils";
 import Image from "next/image";
 import { CommentCard } from "./comment-card";
@@ -14,6 +20,7 @@ import { toast } from "sonner";
 type Props = {
   post: typeof PostTable.$inferSelect & {
     postAuthor: typeof UserTable.$inferSelect;
+    likes: (typeof LikeTable.$inferSelect)[];
     comments: (typeof CommentTable.$inferSelect & {
       replies: (typeof ReplyTable.$inferSelect & {
         replySender: typeof UserTable.$inferSelect;
@@ -88,7 +95,7 @@ export default function PostCard({ post }: Props) {
             <p className="my-2 w-full">{post.content}</p>
             <div className="flex gap-4">
               <LikeBtn />
-              <p>{post.likes}</p>
+              {/* <p>{post.likes.c}</p> */}
               <button
                 onClick={() => {
                   setIsPosting(!isPosting);

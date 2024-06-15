@@ -92,7 +92,7 @@ export const CommentCard = ({ comment }: Props) => {
             <p className="my-2 w-full">{comment.content}</p>
             <div className="flex gap-4 items-center ">
               <LikeBtn />
-              <p>{comment.likes}</p>
+              {/* <p>{comment.likes}</p> */}
               <button
                 onClick={() => {
                   setIsCommenting(!isCommenting);

@@ -10,6 +10,7 @@ import {
   varchar,
   serial,
   uuid,
+  unique,
 } from "drizzle-orm/pg-core";
 
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -31,6 +32,7 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   replyReceiver: many(ReplyTable, { relationName: "replyReceiver" }),
   session: one(sessions),
   account: one(accounts),
+  likes: many(LikeTable),
 }));
 
 export const PostTable = pgTable("posts", {
@@ -43,7 +45,6 @@ export const PostTable = pgTable("posts", {
   authorId: text("author_id")
     .references(() => UserTable.id, { onDelete: "cascade" })
     .notNull(),
-  likes: integer("likes").default(0).notNull(),
 });
 
 export const postTableRelation = relations(PostTable, ({ one, many }) => ({
@@ -52,6 +53,7 @@ export const postTableRelation = relations(PostTable, ({ one, many }) => ({
     references: [UserTable.id],
   }),
   comments: many(CommentTable),
+  likes: many(LikeTable),
 }));
 
 export const CommentTable = pgTable("comments", {
@@ -66,7 +68,6 @@ export const CommentTable = pgTable("comments", {
   postId: text("post_id")
     .references(() => PostTable.id, { onDelete: "cascade" })
     .notNull(),
-  likes: integer("likes").default(0).notNull(),
 });
 
 export const commentTableRelation = relations(
@@ -81,6 +82,7 @@ export const commentTableRelation = relations(
       references: [PostTable.id],
     }),
     replies: many(ReplyTable),
+    likes: many(LikeTable),
   })
 );
 
@@ -101,8 +103,6 @@ export const ReplyTable = pgTable("replies", {
   commentId: text("comment_id")
     .references(() => CommentTable.id, { onDelete: "cascade" })
     .notNull(),
-
-  likes: integer("likes").default(0).notNull(),
 });
 
 export const replyTableRelation = relations(ReplyTable, ({ one, many }) => ({
@@ -119,6 +119,45 @@ export const replyTableRelation = relations(ReplyTable, ({ one, many }) => ({
     fields: [ReplyTable.replyReceiverId],
     references: [UserTable.id],
     relationName: "replyReceiver",
+  }),
+  likes: many(LikeTable),
+}));
+
+export const LikeTable = pgTable("likes", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .notNull(),
+  postId: text("post_id").references(() => PostTable.id, {
+    onDelete: "cascade",
+  }),
+  commentId: text("comment_id").references(() => CommentTable.id, {
+    onDelete: "cascade",
+  }),
+  replyId: text("reply_id").references(() => ReplyTable.id, {
+    onDelete: "cascade",
+  }),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const likeTableRelation = relations(LikeTable, ({ one }) => ({
+  user: one(UserTable, {
+    fields: [LikeTable.userId],
+    references: [UserTable.id],
+  }),
+  post: one(PostTable, {
+    fields: [LikeTable.postId],
+    references: [PostTable.id],
+  }),
+  comment: one(CommentTable, {
+    fields: [LikeTable.commentId],
+    references: [CommentTable.id],
+  }),
+  reply: one(ReplyTable, {
+    fields: [LikeTable.replyId],
+    references: [ReplyTable.id],
   }),
 }));
 

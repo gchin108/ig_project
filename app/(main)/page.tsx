@@ -2,13 +2,32 @@ import { auth } from "@/lib/auth";
 
 import PostCard from "@/components/post-card";
 import { CreateInputField } from "@/components/create-input-field";
-import { getPosts } from "@/lib/queries";
+import {
+  getPostCountFromUsers,
+  getPosts,
+  getPostsWithComments,
+} from "@/lib/queries";
+import { db } from "@/db/db";
+import { LikeTable } from "@/db/schema";
 
 export default async function Home() {
   const session = await auth();
 
   const posts = await getPosts();
-
+  // console.log(
+  //   "posts",
+  //   posts.map((post) => post.likes)
+  // );
+  // if (session?.user)
+  //   await db.insert(LikeTable).values({
+  //     userId: session?.user.id,
+  //     postId: "6a678233-72aa-4faf-be8d-b6907952b21d",
+  //     likes: 1,
+  //   });
+  // const x = await getPostCountFromUsers();
+  // console.log("x", x);
+  const y = await getPostsWithComments();
+  console.log("y", y);
   return (
     <div className="h-full py-10 ">
       <div className="px-2 mb-4">

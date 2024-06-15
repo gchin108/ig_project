@@ -95,7 +95,7 @@ export const ReplyCard = ({ reply, postId }: Props) => {
             </div>
             <div className="flex gap-4 items-center ">
               <LikeBtn />
-              <p>{reply.likes}</p>
+              {/* <p>{reply.likes}</p> */}
               {/* {reply.replySenderId !== reply.id && ( */}
               <button
                 onClick={() => {
