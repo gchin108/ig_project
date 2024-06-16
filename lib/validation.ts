@@ -3,7 +3,7 @@ import { z } from "zod";
 export type FormProps = z.infer<typeof PostSchema>;
 
 export const PostSchema = z.object({
-  content: z.string().trim().min(3),
+  content: z.string().trim().min(3).max(2000),
   // imageSrc: z.union([z.literal(""), z.string().trim().url()]),
   // authorId: z.string().trim(),
 });

@@ -1,20 +1,21 @@
 "use client";
 import { FormProps, PostSchema } from "@/lib/validation";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
 import {
   createPost,
-  replyToComment,
-  replyToReply,
+  createComment,
   updatePost,
+  createReply,
 } from "@/actions/post-actions";
 import { toast } from "sonner";
 import { autoResize } from "@/lib/utils";
 import { usePostContext } from "@/store/postProvider";
 import { getPostById } from "@/lib/queries";
+import { Textarea } from "./ui/textarea";
 
 type Props = {
   commentId?: string;
@@ -24,12 +25,10 @@ type Props = {
   type: "post" | "comment" | "reply";
   actionType: "create" | "edit";
   content?: string;
-  replyId?: string;
 };
 
 export const CreateInputField = ({
   commentId,
-  replyId,
   exitCreate,
   type,
   postId,
@@ -38,9 +37,9 @@ export const CreateInputField = ({
   exitEdit,
 }: Props) => {
   const [query, setQuery] = useState("");
-  const { sessionUser, userId } = usePostContext((state) => ({
+  const { sessionUser, replyReceiverId } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
-    userId: state.userId,
+    replyReceiverId: state.replyReceiverId,
   }));
 
   const {
@@ -57,6 +56,12 @@ export const CreateInputField = ({
   });
 
   const hasInput = query.length > 0;
+  useEffect(() => {
+    const textarea = document.getElementById("content");
+    if (textarea) {
+      autoResize(textarea);
+    }
+  }, [query]);
 
   return (
     <>
@@ -101,25 +106,17 @@ export const CreateInputField = ({
               commentUserId: sessionUser.id,
               postId: postId as string,
             };
-            response = await replyToComment(data, otherData);
+            response = await createComment(data, otherData);
           } else if (type === "reply") {
-            if (actionType === "edit") {
-              response = await updatePost(data, replyId as string, "reply");
-              if (response?.error) {
-                toast.error(response.error);
-              }
-              exitEdit && exitEdit();
-              toast.success(response?.success);
-              return;
-            }
             otherData = {
-              replySenderId: sessionUser.id,
-              replyReceiverId: userId,
-              commentId: commentId as string,
+              parentId: commentId as string,
+              commentUserId: sessionUser.id,
+              postId: postId as string,
+              replyReceiverId,
             };
             console.log("data", data);
 
-            response = await replyToReply(data, otherData);
+            response = await createReply(data, otherData);
           }
           if (response?.error) {
             toast.error(response.error);
@@ -141,15 +138,21 @@ export const CreateInputField = ({
               />
             </div>
           )}
-          <textarea
+          {/* <p>Elit nulla labore officia laboris dolore. Esse veniam consequat pariatur ipsum sit anim quis aliqua officia non. Voluptate laborum ullamco ad ea. Nostrud est incididunt nisi ut labore in anim elit nostrud magna non. Ipsum magna veniam anim eu ipsum.</p> */}
+          <Textarea
             id="content"
-            className="outline-none border-b border-slate-200/50 focus:border-slate-200 w-[90%] px-4 py-2 resize-none no-scrollbar"
+            className="outline-none border-b border-slate-200/50 focus:border-slate-200 w-[90%] px-4 py-2  whitespace-normal resize-none no-scrollbar"
+            placeholder={
+              actionType === "create" && type === "post"
+                ? "What's on your mind?"
+                : ""
+            }
             rows={1}
             onInput={(e) => autoResize(e.target as HTMLTextAreaElement)}
             {...register("content")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-          ></textarea>
+          />
         </div>
         <div className="flex justify-between mt-2">
           <div />
@@ -159,6 +162,7 @@ export const CreateInputField = ({
           {hasInput && (
             <div>
               <Button
+                type="button"
                 variant="secondary"
                 onClick={
                   type === "post" && actionType === "create"
@@ -167,11 +171,11 @@ export const CreateInputField = ({
                     ? () => exitCreate()
                     : exitEdit && (() => exitEdit())
                 }
-                className="rounded-full w-fit"
+                className="rounded-full "
               >
                 cancel
               </Button>
-              <Button variant="ghost" className=" rounded-full mr-4">
+              <Button variant="ghost" className=" rounded-full mx-2">
                 post
               </Button>
             </div>

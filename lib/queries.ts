@@ -1,40 +1,42 @@
 import { cache } from "react";
 import { db } from "@/db/db";
-import { eq, sql } from "drizzle-orm";
-import { CommentTable, PostTable, ReplyTable, UserTable } from "@/db/schema";
+import { eq, inArray, sql } from "drizzle-orm";
+import { CommentTable, PostTable, UserTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import postgres from "postgres";
 
 export const getPosts = cache(async () => {
   const posts = await db.query.PostTable.findMany({
+    orderBy: (post, { asc }) => [asc(post.created_at)],
+
     with: {
       postAuthor: true,
-      likes: true,
       comments: {
+        orderBy: (comments, { asc }) => [asc(comments.created_at)],
         with: {
           commentUser: true,
-          likes: true,
-          replies: {
-            with: {
-              replySender: true,
-              replyReceiver: true,
-            },
-          },
+          parentComment: true,
+          replyReceiver: true,
         },
       },
     },
+    // orderBy: {}
   });
   return posts;
 });
 
 export const getPostsWithComments = cache(async () => {
-  // const posts = await db.execute(sql`
-  //   select *
-  //   from ${PostTable}
-  //   `);
-  // const res: postgres.RowList<Record<string, unknown>[]> = await db.execute(
-  //   posts
-  // );
+  // const posts = await db.select().from(PostTable);
+  // const postIds = posts.map((post) => post.id);
+  // const comments = await db
+  //   .select()
+  //   .from(CommentTable)
+  //   .where(inArray(CommentTable.postId, postIds));
+  // const postsWithComments = posts.map((post) => ({
+  //   ...post,
+  //   comments: comments.filter((comment) => comment.postId === post.id),
+  // }));
+  // return postsWithComments;
 });
 
 export const getPostCountFromUsers = cache(async () => {

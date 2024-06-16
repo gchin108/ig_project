@@ -42,7 +42,7 @@ export const ReplyCard = ({ reply, postId }: Props) => {
           exitEdit={() => {
             setIsEditing(false);
           }}
-          replyId={reply.id}
+          // replyId={reply.id}
           content={reply.content}
         />
       )}

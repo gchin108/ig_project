@@ -1,17 +1,11 @@
 "use client";
 import { LikeBtn } from "@/components/like-button";
-import {
-  CommentTable,
-  LikeTable,
-  PostTable,
-  ReplyTable,
-  UserTable,
-} from "@/db/schema";
+import { CommentTable, PostTable, UserTable } from "@/db/schema";
 import { timeSince } from "@/lib/utils";
 import Image from "next/image";
 import { CommentCard } from "./comment-card";
 import { usePostContext } from "@/store/postProvider";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { flushSync } from "react-dom";
 import { CreateInputField } from "./create-input-field";
 import { DotActionButton } from "./dot-action-button";
@@ -20,26 +14,34 @@ import { toast } from "sonner";
 type Props = {
   post: typeof PostTable.$inferSelect & {
     postAuthor: typeof UserTable.$inferSelect;
-    likes: (typeof LikeTable.$inferSelect)[];
     comments: (typeof CommentTable.$inferSelect & {
-      replies: (typeof ReplyTable.$inferSelect & {
-        replySender: typeof UserTable.$inferSelect;
-        replyReceiver: typeof UserTable.$inferSelect;
-      })[];
       commentUser: typeof UserTable.$inferSelect;
+      replyReceiver: typeof UserTable.$inferSelect | null;
+      // parentComment: typeof CommentTable.$inferSelect;
     })[];
   };
 };
 
 export default function PostCard({ post }: Props) {
-  const { sessionUser, onSetUserId, userId } = usePostContext((state) => ({
+  const { sessionUser } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
-    onSetUserId: state.onSetUserId,
-    userId: state.userId,
+    // onSetParentId: state.onSetParentId,
   }));
-  const [isPosting, setIsPosting] = useState(false);
+  const [isCommenting, setIsCommenting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [createdTime, setCreatedTime] = useState<Date | null>(null);
+  const [editedTime, setEditedTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const set = () => {
+      if (post.updated_at) {
+        setEditedTime(post.updated_at);
+      }
+    };
+    setCreatedTime(post.created_at);
+    set();
+  }, [post.updated_at, post.created_at]);
   if (!sessionUser) {
     return null; // TODO: maybe redirect to login
   }
@@ -57,13 +59,13 @@ export default function PostCard({ post }: Props) {
         />
       )}
       {!isEditing && (
-        <div className="flex w-full gap-2 p-2 ">
+        <div className="flex w-full gap-2 p-2 mb-2">
           <div className="">
             <Image
               src={post.postAuthor.image ? post.postAuthor.image : "/lotus.svg"}
               alt="Profile Picture"
-              width={40}
-              height={10}
+              width={45}
+              height={40}
               className="rounded-full object-cover"
             />
           </div>
@@ -72,7 +74,8 @@ export default function PostCard({ post }: Props) {
               <div className="flex gap-4 items-center">
                 <p className="font-bold text-lg">{post.postAuthor.name}</p>
                 <p className="text-slate-200/50 text-sm">
-                  {timeSince(post.created_at)}
+                  {editedTime ? "edited " : ""}
+                  {timeSince(editedTime ? editedTime : createdTime)}
                 </p>
               </div>
               {post.authorId === sessionUser.id && (
@@ -92,28 +95,26 @@ export default function PostCard({ post }: Props) {
                 />
               )}
             </div>
-            <p className="my-2 w-full">{post.content}</p>
-            <div className="flex gap-4">
-              <LikeBtn />
-              {/* <p>{post.likes.c}</p> */}
-              <button
-                onClick={() => {
-                  setIsPosting(!isPosting);
-                  onSetUserId("");
-                  const receiverId = post.postAuthor.id;
-                  flushSync(() => onSetUserId(receiverId));
-                }}
-              >
-                Reply
-              </button>
+            <div className="w-full overflow-hidden max-w-[700px]">
+              <p className="my-2 break-words">{post.content}</p>
+              <div className="flex gap-4">
+                <LikeBtn />
+                <button
+                  onClick={() => {
+                    setIsCommenting(!isCommenting);
+                  }}
+                >
+                  Reply
+                </button>
+              </div>
             </div>
-            {isPosting && (
+            {isCommenting && (
               <CreateInputField
                 actionType="create"
                 type="comment"
                 postId={post.id}
                 exitCreate={() => {
-                  setIsPosting(false);
+                  setIsCommenting(false);
                 }}
               />
             )}
@@ -123,7 +124,7 @@ export default function PostCard({ post }: Props) {
       {post.comments.length > 0 &&
         post.comments.map((comment) => {
           return (
-            <div key={comment.id} className="ml-14">
+            <div key={comment.id} className="ml-14 ">
               <CommentCard comment={comment} />
             </div>
           );

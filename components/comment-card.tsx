@@ -1,8 +1,8 @@
 import { LikeBtn } from "@/components/like-button";
-import { CommentTable, PostTable, ReplyTable, UserTable } from "@/db/schema";
+import { CommentTable, PostTable, UserTable } from "@/db/schema";
 import { timeSince } from "@/lib/utils";
 import Image from "next/image";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { ReplyCard } from "./reply-card";
 
 import { flushSync } from "react-dom";
@@ -14,22 +14,31 @@ import { toast } from "sonner";
 
 type Props = {
   comment: typeof CommentTable.$inferSelect & {
-    replies: (typeof ReplyTable.$inferSelect & {
-      replySender: typeof UserTable.$inferSelect;
-      replyReceiver: typeof UserTable.$inferSelect;
-    })[];
     commentUser: typeof UserTable.$inferSelect;
+    replyReceiver: typeof UserTable.$inferSelect | null;
+    // parentComment: typeof CommentTable.$inferSelect;
   };
 };
 
 export const CommentCard = ({ comment }: Props) => {
-  const { sessionUser, onSetUserId } = usePostContext((state) => ({
+  const { sessionUser, onSetReplyReceiverId } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
-    onSetUserId: state.onSetUserId,
+    onSetReplyReceiverId: state.onSetReplyReceiverId,
   }));
-  const [isCommenting, setIsCommenting] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   const [pending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
+  const [createdTime, setCreatedTime] = useState<Date | null>(null);
+  const [editedTime, setEditedTime] = useState<Date | null>(null);
+  useEffect(() => {
+    const set = () => {
+      if (comment.updated_at) {
+        setEditedTime(comment.updated_at);
+      }
+    };
+    setCreatedTime(comment.created_at);
+    set();
+  }, [comment.updated_at, comment.created_at]);
   if (!sessionUser) {
     return null;
   }
@@ -50,8 +59,8 @@ export const CommentCard = ({ comment }: Props) => {
         />
       )}
       {!isEditing && (
-        <div className="flex w-full gap-2 p-2">
-          <div className="">
+        <div className="flex w-full gap-2 p-2 mb-2">
+          <div className="min-w-10">
             <Image
               src={
                 comment.commentUser.image
@@ -59,17 +68,18 @@ export const CommentCard = ({ comment }: Props) => {
                   : "/lotus.svg"
               }
               alt="Profile Picture"
-              width={40}
-              height={10}
+              width={45}
+              height={40}
               className="rounded-full object-cover"
             />
           </div>
-          <div className="pl-2 pr-4 flex flex-col flex-1">
+          <div className="pl-2 pr-4 flex flex-col flex-1 gap-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <p className="font-bold text-lg">{comment.commentUser.name}</p>
                 <p className="text-slate-200/50 text-sm">
-                  {timeSince(comment.created_at)}
+                  {editedTime ? "edited " : ""}
+                  {timeSince(editedTime ? editedTime : createdTime)}
                 </p>
               </div>
               {comment.commentUserId === sessionUser.id && (
@@ -89,23 +99,32 @@ export const CommentCard = ({ comment }: Props) => {
                 />
               )}
             </div>
-            <p className="my-2 w-full">{comment.content}</p>
-            <div className="flex gap-4 items-center ">
-              <LikeBtn />
-              {/* <p>{comment.likes}</p> */}
-              <button
-                onClick={() => {
-                  setIsCommenting(!isCommenting);
-                  onSetUserId("");
-                  const receiverId = comment.commentUserId;
-                  flushSync(() => onSetUserId(receiverId));
-                }}
-              >
-                Reply
-              </button>
+            <div className="overflow-hidden max-w-[600px] ">
+              <div className="mb-3">
+                {comment.replyReceiver && (
+                  <span className="mr-2 text-sky-400">
+                    @{comment.replyReceiver.name}
+                  </span>
+                )}
+                {comment.content}
+              </div>
+              <div className="flex gap-4">
+                <LikeBtn />
+
+                <button
+                  onClick={() => {
+                    setIsReplying(!isReplying);
+                    onSetReplyReceiverId("");
+                    const parentCommentUserId = comment.commentUserId;
+                    flushSync(() => onSetReplyReceiverId(parentCommentUserId));
+                  }}
+                >
+                  Reply
+                </button>
+              </div>
             </div>
             {/*open reply field */}
-            {isCommenting && sessionUser && (
+            {isReplying && sessionUser && (
               <CreateInputField
                 type={
                   comment.commentUserId !== sessionUser.id //if replying to your own comment, it becomes a comment to the post instead
@@ -115,7 +134,7 @@ export const CommentCard = ({ comment }: Props) => {
                 postId={comment.postId}
                 actionType="create"
                 exitCreate={() => {
-                  setIsCommenting(false);
+                  setIsReplying(false);
                 }}
                 commentId={comment.id}
               />
@@ -123,14 +142,6 @@ export const CommentCard = ({ comment }: Props) => {
           </div>
         </div>
       )}
-      {comment.replies.length > 0 &&
-        comment.replies.map((reply) => {
-          return (
-            <div key={reply.id}>
-              <ReplyCard reply={reply} postId={comment.postId} />
-            </div>
-          );
-        })}
     </>
   );
 };

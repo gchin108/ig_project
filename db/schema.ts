@@ -27,12 +27,10 @@ export const UserTable = pgTable("user", {
 
 export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   posts: many(PostTable),
-  comments: many(CommentTable),
-  replySender: many(ReplyTable, { relationName: "replySender" }),
-  replyReceiver: many(ReplyTable, { relationName: "replyReceiver" }),
+  comments: many(CommentTable, { relationName: "commentUser" }),
   session: one(sessions),
   account: one(accounts),
-  likes: many(LikeTable),
+  replies: many(CommentTable, { relationName: "replyReceiver" }),
 }));
 
 export const PostTable = pgTable("posts", {
@@ -40,8 +38,8 @@ export const PostTable = pgTable("posts", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   content: text("content").notNull(),
-  imageSrc: text("image_Src"),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at"),
   authorId: text("author_id")
     .references(() => UserTable.id, { onDelete: "cascade" })
     .notNull(),
@@ -53,7 +51,6 @@ export const postTableRelation = relations(PostTable, ({ one, many }) => ({
     references: [UserTable.id],
   }),
   comments: many(CommentTable),
-  likes: many(LikeTable),
 }));
 
 export const CommentTable = pgTable("comments", {
@@ -62,12 +59,17 @@ export const CommentTable = pgTable("comments", {
     .$defaultFn(() => crypto.randomUUID()),
   content: text("content").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at"),
   commentUserId: text("commentUser_id")
     .references(() => UserTable.id, { onDelete: "cascade" })
     .notNull(),
   postId: text("post_id")
     .references(() => PostTable.id, { onDelete: "cascade" })
     .notNull(),
+  parentCommentId: text("parent_comment_id"),
+  replyReceiver: text("replyReceiver_id").references(() => UserTable.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const commentTableRelation = relations(
@@ -76,90 +78,42 @@ export const commentTableRelation = relations(
     commentUser: one(UserTable, {
       fields: [CommentTable.commentUserId],
       references: [UserTable.id],
+      relationName: "commentUser",
     }),
     post: one(PostTable, {
       fields: [CommentTable.postId],
       references: [PostTable.id],
     }),
-    replies: many(ReplyTable),
-    likes: many(LikeTable),
+    parentComment: one(CommentTable, {
+      fields: [CommentTable.parentCommentId],
+      references: [CommentTable.id],
+    }),
+    replyReceiver: one(UserTable, {
+      fields: [CommentTable.replyReceiver],
+      references: [UserTable.id],
+      relationName: "replyReceiver",
+    }),
   })
 );
 
-export const ReplyTable = pgTable("replies", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  content: text("content").notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-
-  replySenderId: text("reply_sender_id")
-    .references(() => UserTable.id, { onDelete: "cascade" })
-    .notNull(),
-  replyReceiverId: text("reply_receiver_id")
-    .references(() => UserTable.id, { onDelete: "cascade" })
-    .notNull(),
-
-  commentId: text("comment_id")
-    .references(() => CommentTable.id, { onDelete: "cascade" })
-    .notNull(),
-});
-
-export const replyTableRelation = relations(ReplyTable, ({ one, many }) => ({
-  comment: one(CommentTable, {
-    fields: [ReplyTable.commentId],
-    references: [CommentTable.id],
-  }),
-  replySender: one(UserTable, {
-    fields: [ReplyTable.replySenderId],
-    references: [UserTable.id],
-    relationName: "replySender",
-  }),
-  replyReceiver: one(UserTable, {
-    fields: [ReplyTable.replyReceiverId],
-    references: [UserTable.id],
-    relationName: "replyReceiver",
-  }),
-  likes: many(LikeTable),
-}));
-
-export const LikeTable = pgTable("likes", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id")
-    .references(() => UserTable.id, { onDelete: "cascade" })
-    .notNull(),
-  postId: text("post_id").references(() => PostTable.id, {
-    onDelete: "cascade",
-  }),
-  commentId: text("comment_id").references(() => CommentTable.id, {
-    onDelete: "cascade",
-  }),
-  replyId: text("reply_id").references(() => ReplyTable.id, {
-    onDelete: "cascade",
-  }),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const likeTableRelation = relations(LikeTable, ({ one }) => ({
-  user: one(UserTable, {
-    fields: [LikeTable.userId],
-    references: [UserTable.id],
-  }),
-  post: one(PostTable, {
-    fields: [LikeTable.postId],
-    references: [PostTable.id],
-  }),
-  comment: one(CommentTable, {
-    fields: [LikeTable.commentId],
-    references: [CommentTable.id],
-  }),
-  reply: one(ReplyTable, {
-    fields: [LikeTable.replyId],
-    references: [ReplyTable.id],
-  }),
-}));
+// export const LikeTable = pgTable("likes", {
+//   id: text("id")
+//     .primaryKey()
+//     .$defaultFn(() => crypto.randomUUID()),
+//   userId: text("user_id")
+//     .references(() => UserTable.id, { onDelete: "cascade" })
+//     .notNull(),
+//   postId: text("post_id").references(() => PostTable.id, {
+//     onDelete: "cascade",
+//   }),
+//   commentId: text("comment_id").references(() => CommentTable.id, {
+//     onDelete: "cascade",
+//   }),
+//   replyId: text("reply_id").references(() => ReplyTable.id, {
+//     onDelete: "cascade",
+//   }),
+//   created_at: timestamp("created_at").defaultNow().notNull(),
+// });
 
 export const accounts = pgTable(
   "account",

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/db";
-import { CommentTable, PostTable, ReplyTable, UserTable } from "@/db/schema";
+import { CommentTable, PostTable, UserTable } from "@/db/schema";
 import { PostSchema } from "@/lib/validation";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -32,7 +32,7 @@ export const getUserNameById = async (userId: string) => {
   });
   return username;
 };
-export const replyToComment = async (
+export const createComment = async (
   data: unknown,
   otherData: {
     commentUserId: string;
@@ -60,12 +60,13 @@ export const replyToComment = async (
   }
 };
 
-export const replyToReply = async (
+export const createReply = async (
   data: unknown,
   otherData: {
-    replySenderId: string;
+    parentId: string;
+    commentUserId: string;
+    postId: string;
     replyReceiverId: string;
-    commentId: string;
   }
 ) => {
   console.log("content", data);
@@ -75,11 +76,12 @@ export const replyToReply = async (
     return { error: "Invalid data" };
   }
   try {
-    await db.insert(ReplyTable).values({
+    await db.insert(CommentTable).values({
       content: validatedReply.data.content,
-      replySenderId: otherData.replySenderId,
-      replyReceiverId: otherData.replyReceiverId,
-      commentId: otherData.commentId,
+      parentCommentId: otherData.parentId,
+      commentUserId: otherData.commentUserId,
+      postId: otherData.postId,
+      replyReceiver: otherData.replyReceiverId,
     });
 
     revalidatePath("/");
@@ -95,9 +97,7 @@ export const deletePost = async (
   type: "post" | "comment" | "reply"
 ) => {
   try {
-    if (type === "reply") {
-      await db.delete(ReplyTable).where(eq(ReplyTable.id, id));
-    } else if (type === "comment") {
+    if (type === "comment") {
       await db.delete(CommentTable).where(eq(CommentTable.id, id));
     } else if (type === "post") {
       await db.delete(PostTable).where(eq(PostTable.id, id));
@@ -120,18 +120,20 @@ export const updatePost = async (
     return { error: "Invalid data" };
   }
   try {
-    if (type === "reply") {
-      await db
-        .update(ReplyTable)
-        .set({
-          content: validatedData.data.content,
-        })
-        .where(eq(ReplyTable.id, id));
-    } else if (type === "comment") {
+    // if (type === "reply") {
+    //   await db
+    //     .update(ReplyTable)
+    //     .set({
+    //       content: validatedData.data.content,
+    //     })
+    //     .where(eq(ReplyTable.id, id));
+    // }
+    if (type === "comment") {
       await db
         .update(CommentTable)
         .set({
           content: validatedData.data.content,
+          updated_at: sql`now()`,
         })
         .where(eq(CommentTable.id, id));
     } else if (type === "post") {
@@ -139,6 +141,7 @@ export const updatePost = async (
         .update(PostTable)
         .set({
           content: validatedData.data.content,
+          updated_at: sql`now()`,
         })
         .where(eq(PostTable.id, id));
     }

@@ -13,10 +13,10 @@ type Props = {
   };
 };
 type PostState = Props & {
-  userId: string;
+  replyReceiverId: string;
   isPosting: boolean;
   isEditing: boolean;
-  onSetUserId: (id: string) => void;
+  onSetReplyReceiverId: (id: string) => void;
   setIsPosting: (isPosting: boolean) => void;
   setIsEditing: (isEditing: boolean) => void;
 };
@@ -41,10 +41,10 @@ const createPostStore = (initProps?: Partial<Props>) => {
   return createStore<PostState>((set, get) => ({
     ...DEFAULT_PROPS,
     ...initProps,
-    userId: "0",
+    replyReceiverId: "0",
     isPosting: false,
     isEditing: false,
-    onSetUserId: (id) => set({ userId: id }),
+    onSetReplyReceiverId: (id) => set({ replyReceiverId: id }),
     setIsPosting: (isPosting) => set({ isPosting }),
     setIsEditing: (isEditing) => set({ isEditing }),
   }));

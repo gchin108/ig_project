@@ -8,16 +8,13 @@ import {
   getPostsWithComments,
 } from "@/lib/queries";
 import { db } from "@/db/db";
-import { LikeTable } from "@/db/schema";
 
 export default async function Home() {
   const session = await auth();
 
   const posts = await getPosts();
-  // console.log(
-  //   "posts",
-  //   posts.map((post) => post.likes)
-  // );
+  // console.log("posts", posts);
+
   // if (session?.user)
   //   await db.insert(LikeTable).values({
   //     userId: session?.user.id,
@@ -26,8 +23,12 @@ export default async function Home() {
   //   });
   // const x = await getPostCountFromUsers();
   // console.log("x", x);
-  const y = await getPostsWithComments();
-  console.log("y", y);
+  // const y = await getPostsWithComments();
+  // console.log(
+  //   "y",
+  //   y.map((x) => x.comments)
+  // );
+  // console.log("legth", y.length);
   return (
     <div className="h-full py-10 ">
       <div className="px-2 mb-4">
@@ -36,7 +37,7 @@ export default async function Home() {
       {posts.length > 0 &&
         posts.map((post) => {
           return (
-            <div key={post.id}>
+            <div key={post.id} className=" ">
               <PostCard post={post} />
             </div>
           );

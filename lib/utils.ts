@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function timeSince(date: Date): string {
+export function timeSince(date: Date | null): string {
+  if (date === null) {
+    return "";
+  }
   const now = new Date();
   const secondsPast = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -23,7 +26,7 @@ export function timeSince(date: Date): string {
   }
 }
 
-export function autoResize(textarea: HTMLTextAreaElement) {
+export function autoResize(textarea: HTMLElement) {
   // Reset the height to auto to shrink it back down and then measure the scrollHeight
   textarea.style.height = "auto";
   // Set the height to the scrollHeight to make the textarea expand
