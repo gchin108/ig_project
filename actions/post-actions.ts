@@ -1,11 +1,70 @@
 "use server";
 
 import { db } from "@/db/db";
-import { CommentTable, PostTable, UserTable } from "@/db/schema";
+import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
 import { PostSchema } from "@/lib/validation";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+export const addLike = async (data: {
+  postId?: string;
+  userId: string;
+  commentId?: string;
+  type: "post" | "comment";
+}) => {
+  try {
+    if (data.type === "post") {
+      await db.insert(LikeTable).values({
+        userId: data.userId,
+        postId: data.postId,
+      });
+    } else if (data.type === "comment") {
+      await db.insert(LikeTable).values({
+        userId: data.userId,
+        commentId: data.commentId,
+      });
+    }
+    revalidatePath("/");
+    return { success: `${data.type} liked!` };
+  } catch (err) {
+    console.log(err);
+    return { error: `An error occurred while liking the ${data.type}.` };
+  }
+};
+export const removeLike = async (data: {
+  postId?: string;
+  userId: string;
+  commentId?: string;
+  type: "post" | "comment";
+}) => {
+  try {
+    if (data.type === "post" && typeof data.postId === "string") {
+      await db
+        .delete(LikeTable)
+        .where(
+          and(
+            eq(LikeTable.userId, data.userId),
+            eq(LikeTable.postId, data.postId)
+          )
+        );
+    } else if (data.type === "comment" && typeof data.commentId === "string") {
+      await db
+        .delete(LikeTable)
+        .where(
+          and(
+            eq(LikeTable.userId, data.userId),
+            eq(LikeTable.commentId, data.commentId)
+          )
+        );
+    }
+    revalidatePath("/");
+    return { success: "like removed!" };
+  } catch (err) {
+    console.log(err);
+    return { error: "An error occurred while removing the like." };
+  }
+};
 
 export const createPost = async (data: unknown, authorId: string) => {
   const validatedPost = PostSchema.safeParse(data);

@@ -59,7 +59,7 @@ export const CommentCard = ({ comment }: Props) => {
         />
       )}
       {!isEditing && (
-        <div className="flex w-full gap-2 p-2 mb-2">
+        <div className="flex w-full p-2 text-sm">
           <div className="min-w-10">
             <Image
               src={
@@ -68,16 +68,16 @@ export const CommentCard = ({ comment }: Props) => {
                   : "/lotus.svg"
               }
               alt="Profile Picture"
-              width={45}
+              width={30}
               height={40}
               className="rounded-full object-cover"
             />
           </div>
-          <div className="pl-2 pr-4 flex flex-col flex-1 gap-1">
+          <div className="pl-2 pr-4 flex flex-col flex-1 gap-[2px]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <p className="font-bold text-lg">{comment.commentUser.name}</p>
-                <p className="text-slate-200/50 text-sm">
+                <p className="font-bold ">{comment.commentUser.name}</p>
+                <p className="text-slate-200/50 text-xs">
                   {editedTime ? "edited " : ""}
                   {timeSince(editedTime ? editedTime : createdTime)}
                 </p>
@@ -99,17 +99,17 @@ export const CommentCard = ({ comment }: Props) => {
                 />
               )}
             </div>
-            <div className="overflow-hidden max-w-[600px] ">
-              <div className="mb-3">
+            <div className="overflow-hidden max-w-[630px] ">
+              <div className="mb-3 ">
                 {comment.replyReceiver && (
                   <span className="mr-2 text-sky-400">
                     @{comment.replyReceiver.name}
                   </span>
                 )}
-                {comment.content}
+                <span className="tracking-wide">{comment.content}</span>
               </div>
               <div className="flex gap-4">
-                <LikeBtn />
+                {/* <LikeBtn /> */}
 
                 <button
                   onClick={() => {

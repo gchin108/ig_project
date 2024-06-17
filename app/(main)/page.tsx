@@ -13,7 +13,6 @@ export default async function Home() {
   const session = await auth();
 
   const posts = await getPosts();
-  // console.log("posts", posts);
 
   // if (session?.user)
   //   await db.insert(LikeTable).values({

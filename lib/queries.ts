@@ -6,11 +6,18 @@ import { auth } from "@/lib/auth";
 import postgres from "postgres";
 
 export const getPosts = cache(async () => {
+  const session = await auth();
+  console.log("session", session?.user.id);
   const posts = await db.query.PostTable.findMany({
     orderBy: (post, { asc }) => [asc(post.created_at)],
 
     with: {
-      postAuthor: true,
+      postAuthor: {
+        with: {
+          likes: true,
+        },
+      },
+      likes: true,
       comments: {
         orderBy: (comments, { asc }) => [asc(comments.created_at)],
         with: {
@@ -20,9 +27,16 @@ export const getPosts = cache(async () => {
         },
       },
     },
-    // orderBy: {}
   });
-  return posts;
+  const normalizedData = posts.map((post) => {
+    const postLikeByCurrentUser =
+      session?.user.id ===
+      post.likes.find((like) => {
+        return like.userId === session?.user.id;
+      })?.userId;
+    return { likeByCurrentUser: postLikeByCurrentUser, ...post };
+  });
+  return normalizedData;
 });
 
 export const getPostsWithComments = cache(async () => {

@@ -1,12 +1,14 @@
-import { HeartIcon } from "lucide-react";
-import React from "react";
+import { HeartFilledIcon, HeartIcon } from "@radix-ui/react-icons";
 
-export const LikeBtn = () => {
+type Props = {
+  onClick: () => void;
+  isLiked: boolean;
+};
+
+export const LikeBtn = ({ onClick, isLiked }: Props) => {
   return (
-    <div>
-      <button>
-        <HeartIcon />
-      </button>
-    </div>
+    <button onClick={onClick}>
+      {isLiked ? <HeartFilledIcon /> : <HeartIcon />}
+    </button>
   );
 };

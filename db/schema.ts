@@ -31,6 +31,7 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   session: one(sessions),
   account: one(accounts),
   replies: many(CommentTable, { relationName: "replyReceiver" }),
+  likes: many(LikeTable),
 }));
 
 export const PostTable = pgTable("posts", {
@@ -51,6 +52,7 @@ export const postTableRelation = relations(PostTable, ({ one, many }) => ({
     references: [UserTable.id],
   }),
   comments: many(CommentTable),
+  likes: many(LikeTable),
 }));
 
 export const CommentTable = pgTable("comments", {
@@ -93,27 +95,45 @@ export const commentTableRelation = relations(
       references: [UserTable.id],
       relationName: "replyReceiver",
     }),
+    likes: many(LikeTable),
   })
 );
 
-// export const LikeTable = pgTable("likes", {
-//   id: text("id")
-//     .primaryKey()
-//     .$defaultFn(() => crypto.randomUUID()),
-//   userId: text("user_id")
-//     .references(() => UserTable.id, { onDelete: "cascade" })
-//     .notNull(),
-//   postId: text("post_id").references(() => PostTable.id, {
-//     onDelete: "cascade",
-//   }),
-//   commentId: text("comment_id").references(() => CommentTable.id, {
-//     onDelete: "cascade",
-//   }),
-//   replyId: text("reply_id").references(() => ReplyTable.id, {
-//     onDelete: "cascade",
-//   }),
-//   created_at: timestamp("created_at").defaultNow().notNull(),
-// });
+export const LikeTable = pgTable(
+  "likes",
+  {
+    id: serial("id").primaryKey(),
+
+    userId: text("user_id")
+      .references(() => UserTable.id, { onDelete: "cascade" })
+      .notNull(),
+    postId: text("post_id").references(() => PostTable.id, {
+      onDelete: "cascade",
+    }),
+    commentId: text("comment_id").references(() => CommentTable.id, {
+      onDelete: "cascade",
+    }),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    unq: unique().on(t.userId, t.postId, t.commentId),
+  })
+);
+
+export const likeTableRelation = relations(LikeTable, ({ one }) => ({
+  user: one(UserTable, {
+    fields: [LikeTable.userId],
+    references: [UserTable.id],
+  }),
+  post: one(PostTable, {
+    fields: [LikeTable.postId],
+    references: [PostTable.id],
+  }),
+  comment: one(CommentTable, {
+    fields: [LikeTable.commentId],
+    references: [CommentTable.id],
+  }),
+}));
 
 export const accounts = pgTable(
   "account",
