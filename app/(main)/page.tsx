@@ -13,6 +13,10 @@ export default async function Home() {
   const session = await auth();
 
   const posts = await getPosts();
+  // console.log(
+  //   "posts",
+  //   posts.map((x) => x.comments)
+  // );
 
   // if (session?.user)
   //   await db.insert(LikeTable).values({

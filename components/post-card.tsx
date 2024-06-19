@@ -1,17 +1,19 @@
 "use client";
 import { LikeBtn } from "@/components/like-button";
 import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
-import { timeSince } from "@/lib/utils";
 import Image from "next/image";
 import { CommentCard } from "./comment-card";
 import { usePostContext } from "@/store/postProvider";
-import { useEffect, useState, useTransition } from "react";
-import { flushSync } from "react-dom";
+import { useState, useTransition } from "react";
+
 import { CreateInputField } from "./create-input-field";
 import { DotActionButton } from "./dot-action-button";
 import { addLike, deletePost, removeLike } from "@/actions/post-actions";
 import { toast } from "sonner";
 import { LikeData } from "@/types/general-types";
+import { PostHeader } from "./post-header";
+import { PostBody } from "./post-body";
+import { PostAvatarLogo } from "./post-avatar-logo";
 type Props = {
   post: typeof PostTable.$inferSelect & {
     likeByCurrentUser: boolean;
@@ -22,6 +24,8 @@ type Props = {
     comments: (typeof CommentTable.$inferSelect & {
       commentUser: typeof UserTable.$inferSelect;
       replyReceiver: typeof UserTable.$inferSelect | null;
+      likeByCurrentUser: boolean;
+      likes: (typeof LikeTable.$inferSelect)[];
     })[];
   };
 };
@@ -29,13 +33,10 @@ type Props = {
 export default function PostCard({ post }: Props) {
   const { sessionUser } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
-    // onSetParentId: state.onSetParentId,
   }));
   const [isCommenting, setIsCommenting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [createdTime, setCreatedTime] = useState<Date | null>(null);
-  const [editedTime, setEditedTime] = useState<Date | null>(null);
 
   function handleLike() {
     if (!sessionUser.id) {
@@ -69,15 +70,6 @@ export default function PostCard({ post }: Props) {
     });
   }
 
-  useEffect(() => {
-    const set = () => {
-      if (post.updated_at) {
-        setEditedTime(post.updated_at);
-      }
-    };
-    setCreatedTime(post.created_at);
-    set();
-  }, [post.updated_at, post.created_at]);
   if (!sessionUser) {
     return null; // TODO: maybe redirect to login
   }
@@ -96,24 +88,13 @@ export default function PostCard({ post }: Props) {
       )}
       {!isEditing && (
         <div className="flex w-full gap-2 p-2 my-2 text-sm">
-          <div className="">
-            <Image
-              src={post.postAuthor.image ? post.postAuthor.image : "/lotus.svg"}
-              alt="Profile Picture"
-              width={40}
-              height={40}
-              className="rounded-full object-cover"
-            />
-          </div>
+          <PostAvatarLogo imageUrl={post.postAuthor.image} type="post" />
           <div className="pl-2 pr-4 flex flex-col flex-1">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-4 items-center">
-                <p className="font-bold ">{post.postAuthor.name}</p>
-                <p className="text-slate-200/50 text-xs">
-                  {editedTime ? "edited " : ""}
-                  {timeSince(editedTime ? editedTime : createdTime)}
-                </p>
-              </div>
+            <PostHeader
+              postAuthorName={post.postAuthor.name}
+              updatedAtTime={post.updated_at}
+              createdAtTime={post.created_at}
+            >
               {post.authorId === sessionUser.id && (
                 <DotActionButton
                   onDelete={handleDelete}
@@ -122,24 +103,19 @@ export default function PostCard({ post }: Props) {
                   }}
                 />
               )}
-            </div>
-            <div className="w-full overflow-hidden max-w-[680px]">
-              <p className="my-2 break-words tracking-wide">{post.content}</p>
-              <div className="flex gap-2 items-center">
-                <LikeBtn
-                  onClick={handleLike}
-                  isLiked={post.likeByCurrentUser}
-                />
-                <p>{post.likes.length}</p>
-                <button
-                  onClick={() => {
-                    setIsCommenting(!isCommenting);
-                  }}
-                >
-                  Reply
-                </button>
-              </div>
-            </div>
+            </PostHeader>
+            <PostBody type="post" postContent={post.content}>
+              <LikeBtn onClick={handleLike} isLiked={post.likeByCurrentUser} />
+              <p>{post.likes.length}</p>
+              <button
+                onClick={() => {
+                  setIsCommenting(!isCommenting);
+                }}
+              >
+                Reply
+              </button>
+            </PostBody>
+
             {isCommenting && (
               <CreateInputField
                 actionType="create"

@@ -7,7 +7,7 @@ import postgres from "postgres";
 
 export const getPosts = cache(async () => {
   const session = await auth();
-  console.log("session", session?.user.id);
+  // console.log("session", session?.user.id);
   const posts = await db.query.PostTable.findMany({
     orderBy: (post, { asc }) => [asc(post.created_at)],
 
@@ -24,33 +24,50 @@ export const getPosts = cache(async () => {
           commentUser: true,
           parentComment: true,
           replyReceiver: true,
+          likes: true,
         },
       },
     },
   });
   const normalizedData = posts.map((post) => {
+    const commentsWithLikes = post.comments.map((comment) => {
+      const likeByCurrentUser =
+        session?.user.id ===
+        comment.likes.find((like) => {
+          return like.userId === session?.user.id;
+        })?.userId;
+      return { likeByCurrentUser, ...comment };
+    });
+
     const postLikeByCurrentUser =
       session?.user.id ===
       post.likes.find((like) => {
         return like.userId === session?.user.id;
       })?.userId;
-    return { likeByCurrentUser: postLikeByCurrentUser, ...post };
+
+    // Assign commentsWithLikes to comments before spreading other properties
+    return {
+      ...post,
+      likeByCurrentUser: postLikeByCurrentUser,
+      comments: commentsWithLikes,
+    };
   });
+
   return normalizedData;
 });
 
 export const getPostsWithComments = cache(async () => {
-  // const posts = await db.select().from(PostTable);
-  // const postIds = posts.map((post) => post.id);
-  // const comments = await db
-  //   .select()
-  //   .from(CommentTable)
-  //   .where(inArray(CommentTable.postId, postIds));
-  // const postsWithComments = posts.map((post) => ({
-  //   ...post,
-  //   comments: comments.filter((comment) => comment.postId === post.id),
-  // }));
-  // return postsWithComments;
+  const posts = await db.select().from(PostTable);
+  const postIds = posts.map((post) => post.id);
+  const comments = await db
+    .select()
+    .from(CommentTable)
+    .where(inArray(CommentTable.postId, postIds));
+  const postsWithComments = posts.map((post) => ({
+    ...post,
+    comments: comments.filter((comment) => comment.postId === post.id),
+  }));
+  return postsWithComments;
 });
 
 export const getPostCountFromUsers = cache(async () => {
