@@ -11,6 +11,7 @@ import {
   serial,
   uuid,
   unique,
+  real,
 } from "drizzle-orm/pg-core";
 
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -39,6 +40,9 @@ export const PostTable = pgTable("posts", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   content: text("content").notNull(),
+  imageUrl: varchar("imageUrl").notNull(),
+  lat: real("lat"),
+  lng: real("lng"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at"),
   authorId: text("author_id")

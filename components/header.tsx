@@ -9,7 +9,7 @@ import React from "react";
 
 export const Header = () => {
   return (
-    <div className="sticky top-[50px] bg-black  border-slate-200/20 border p-4 flex justify-between">
+    <div className="sticky top-[56px] bg-black  border-slate-200/20 border p-4 flex justify-between z-10">
       <Link href="/">
         <HomeIcon />
       </Link>

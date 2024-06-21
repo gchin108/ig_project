@@ -104,7 +104,11 @@ export default function PostCard({ post }: Props) {
                 />
               )}
             </PostHeader>
-            <PostBody type="post" postContent={post.content}>
+            <PostBody
+              type="post"
+              postContent={post.content}
+              imageUrl={post.imageUrl}
+            >
               <LikeBtn onClick={handleLike} isLiked={post.likeByCurrentUser} />
               <p>{post.likes.length}</p>
               <button
@@ -117,14 +121,16 @@ export default function PostCard({ post }: Props) {
             </PostBody>
 
             {isCommenting && (
-              <CreateInputField
-                actionType="create"
-                type="comment"
-                postId={post.id}
-                exitCreate={() => {
-                  setIsCommenting(false);
-                }}
-              />
+              <div className="mt-4">
+                <CreateInputField
+                  actionType="create"
+                  type="comment"
+                  postId={post.id}
+                  exitCreate={() => {
+                    setIsCommenting(false);
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>

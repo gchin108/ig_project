@@ -57,7 +57,7 @@ export const CommentCard = ({ comment }: Props) => {
   }
   function handleDelete() {
     startTransition(async () => {
-      await deletePost(comment.id, "post")
+      await deletePost(comment.id, "comment")
         .then((res) => res.success && toast.success(res.success))
         .catch((err) => toast.error(err));
     });
@@ -117,19 +117,21 @@ export const CommentCard = ({ comment }: Props) => {
             </PostBody>
             {/*open reply field */}
             {isReplying && sessionUser && (
-              <CreateInputField
-                type={
-                  comment.commentUserId !== sessionUser.id //if replying to your own comment, it becomes a comment to the post instead
-                    ? "reply"
-                    : "comment"
-                }
-                postId={comment.postId}
-                actionType="create"
-                exitCreate={() => {
-                  setIsReplying(false);
-                }}
-                commentId={comment.id}
-              />
+              <div className="mt-4">
+                <CreateInputField
+                  type={
+                    comment.commentUserId !== sessionUser.id //if replying to your own comment, it becomes a comment to the post instead
+                      ? "reply"
+                      : "comment"
+                  }
+                  postId={comment.postId}
+                  actionType="create"
+                  exitCreate={() => {
+                    setIsReplying(false);
+                  }}
+                  commentId={comment.id}
+                />
+              </div>
             )}
           </div>
         </div>

@@ -66,16 +66,21 @@ export const removeLike = async (data: {
   }
 };
 
-export const createPost = async (data: unknown, authorId: string) => {
+export const createPost = async (
+  data: unknown,
+  authorId: string,
+  imgUrl: string
+) => {
   const validatedPost = PostSchema.safeParse(data);
   if (!validatedPost.success) {
     return { error: "Invalid data" };
   }
-  console.log("validatedPost", validatedPost);
+  console.log("validatedPost", validatedPost, imgUrl);
   try {
     await db.insert(PostTable).values({
       content: validatedPost.data.content,
       authorId: authorId,
+      imageUrl: imgUrl,
     });
     revalidatePath("/");
     return { success: "Post created!" };

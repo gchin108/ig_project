@@ -1,9 +1,11 @@
+import Image from "next/image";
 import React from "react";
 type Props = {
   children: React.ReactNode;
   postContent: string;
   type: "post" | "comment";
   replyReceiverName?: string | null;
+  imageUrl?: string;
 };
 
 export const PostBody = ({
@@ -11,11 +13,17 @@ export const PostBody = ({
   postContent,
   type,
   replyReceiverName,
+  imageUrl,
 }: Props) => {
   return (
     <>
       {type === "post" && (
         <div className=" overflow-hidden max-w-[680px]">
+          <div className="relative h-[500px] z-[2]">
+            {imageUrl && (
+              <Image alt="img" src={imageUrl} fill className="object-contain" />
+            )}
+          </div>
           <p className="my-2 break-words tracking-wide">{postContent}</p>
           <div className="flex gap-2 items-center">{children}</div>
         </div>
