@@ -5,7 +5,8 @@ import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
 import { PostSchema } from "@/lib/validation";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { getKeyFromUrl } from "@/lib/utils";
 
 export const addLike = async (data: {
   postId?: string;
@@ -156,15 +157,33 @@ export const createReply = async (
   }
 };
 
+export const deleteS3Image = async (key: string) => {
+  const client = new S3Client({ region: process.env.AWS_REGION });
+  const command = new DeleteObjectCommand({
+    Bucket: process.env.AWS_BUCKET_NAME as string,
+    Key: key,
+  });
+  try {
+    await client.send(command);
+    return { success: "Image deleted!" };
+  } catch (err) {
+    console.log(err);
+    return { error: "An error occurred while deleting the image." };
+  }
+};
+
 export const deletePost = async (
   id: string,
-  type: "post" | "comment" | "reply"
+  type: "post" | "comment" | "reply",
+  imgUrl?: string
 ) => {
   try {
     if (type === "comment") {
       await db.delete(CommentTable).where(eq(CommentTable.id, id));
     } else if (type === "post") {
       await db.delete(PostTable).where(eq(PostTable.id, id));
+      const imgKey = getKeyFromUrl(imgUrl as string);
+      await deleteS3Image(imgKey);
     }
     revalidatePath("/");
     return { success: `${type} deleted!` };

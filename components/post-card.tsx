@@ -64,7 +64,7 @@ export default function PostCard({ post }: Props) {
   }
   function handleDelete() {
     startTransition(async () => {
-      await deletePost(post.id, "post")
+      await deletePost(post.id, "post", post.imageUrl)
         .then((res) => res.success && toast.success(res.success))
         .catch((err) => toast.error(err));
     });
@@ -88,7 +88,11 @@ export default function PostCard({ post }: Props) {
       )}
       {!isEditing && (
         <div className="flex w-full gap-2 p-2 my-2 text-sm">
-          <PostAvatarLogo imageUrl={post.postAuthor.image} type="post" />
+          <PostAvatarLogo
+            imageUrl={post.postAuthor.image}
+            type="post"
+            username={post.postAuthor.name}
+          />
           <div className="pl-2 pr-4 flex flex-col flex-1">
             <PostHeader
               postAuthorName={post.postAuthor.name}

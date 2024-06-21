@@ -32,3 +32,9 @@ export function autoResize(textarea: HTMLElement) {
   // Set the height to the scrollHeight to make the textarea expand
   textarea.style.height = textarea.scrollHeight + "px";
 }
+
+export function getKeyFromUrl(url: string) {
+  const lastSlashIndex = url.lastIndexOf("/");
+  const extractedKey = url.slice(lastSlashIndex + 1);
+  return extractedKey;
+}

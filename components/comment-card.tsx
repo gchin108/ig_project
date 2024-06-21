@@ -78,7 +78,11 @@ export const CommentCard = ({ comment }: Props) => {
       )}
       {!isEditing && (
         <div className="flex w-full p-2 text-sm">
-          <PostAvatarLogo imageUrl={comment.commentUser.image} type="comment" />
+          <PostAvatarLogo
+            imageUrl={comment.commentUser.image}
+            type="comment"
+            username={comment.commentUser.name}
+          />
           <div className="pl-2 pr-4 flex flex-col flex-1 gap-[2px]">
             <PostHeader
               postAuthorName={comment.commentUser.name}

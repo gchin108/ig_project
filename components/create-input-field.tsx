@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
-import { ImageIcon } from "lucide-react";
 import { flushSync } from "react-dom";
 import {
   createPost,
@@ -16,8 +15,8 @@ import {
 import { toast } from "sonner";
 import { autoResize } from "@/lib/utils";
 import { usePostContext } from "@/store/postProvider";
-import { getPostById } from "@/lib/queries";
 import { Textarea } from "./ui/textarea";
+import getPresignedImageUrl from "@/actions/server-utils";
 
 type Props = {
   commentId?: string;
@@ -44,7 +43,6 @@ export const CreateInputField = ({
     replyReceiverId: state.replyReceiverId,
   }));
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [imgUrl, setImgUrl] = useState("");
 
   const {
@@ -84,7 +82,6 @@ export const CreateInputField = ({
       toast.error(response.error);
     }
     reset();
-    setUploading(false);
     exitCreate && exitCreate();
     toast.success(response?.success);
   }
@@ -106,7 +103,6 @@ export const CreateInputField = ({
           };
           let response;
           let otherData;
-          setUploading(true);
           if (type === "post") {
             if (actionType === "edit") {
               response = await updatePost(data, postId as string, "post");
@@ -119,27 +115,16 @@ export const CreateInputField = ({
             }
             if (!file) {
               alert("Please select a file to upload.");
-              setUploading(false);
               return;
             }
 
-            const res = await fetch(
-              process.env.NEXT_PUBLIC_BASE_URL + "/api/upload",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json", // to indicate that the body of the request is JSON. This helps your server correctly parse the incoming request.
-                },
-                body: JSON.stringify({
-                  filename: file.name,
-                  contentType: file.type,
-                }),
-              }
-            );
-
-            if (res.ok) {
-              const { url, fields, finalUrl } = await res.json();
-
+            const res = await getPresignedImageUrl(file.name, file.type);
+            if (res.error) {
+              toast.error("Failed to get pre-signed URL.");
+              return;
+            }
+            if (res.success) {
+              const { url, fields, finalUrl } = res;
               const formData = new FormData();
               Object.entries(fields).forEach(([key, value]) => {
                 formData.append(key, value as string);
@@ -155,20 +140,17 @@ export const CreateInputField = ({
               if (uploadResponse.ok) {
                 flushSync(() => {
                   setImgUrl(finalUrl);
-                  // console.log("File uploaded to:", finalUrl);
                   createPostWithImage(data, finalUrl, sessionUser.id);
                 });
-                console.log("File uploaded to:", finalUrl);
+                // console.log("File uploaded to:", finalUrl);
               } else {
                 console.error("S3 Upload Error:", uploadResponse);
-                alert("Upload failed.");
+                toast.error("Upload failed.");
               }
-            } else {
-              alert("Failed to get pre-signed URL.");
             }
+
             setImgUrl("");
             setFile(null);
-            setUploading(false);
             return;
           } else if (type === "comment") {
             if (actionType === "edit") {
@@ -200,7 +182,6 @@ export const CreateInputField = ({
             toast.error(response.error);
           }
           reset();
-          setUploading(false);
           exitCreate && exitCreate();
           toast.success(response?.success);
         }}
@@ -248,7 +229,10 @@ export const CreateInputField = ({
                 variant="ghost"
                 onClick={
                   type === "post" && actionType === "create"
-                    ? () => setQuery("")
+                    ? () => {
+                        setQuery("");
+                        setFile(null);
+                      }
                     : exitCreate
                     ? () => exitCreate()
                     : exitEdit && (() => exitEdit())
@@ -285,7 +269,7 @@ export const CreateInputField = ({
               <Button
                 variant="secondary"
                 className=" rounded-full "
-                disabled={uploading}
+                disabled={isSubmitting}
               >
                 post
               </Button>
