@@ -89,7 +89,8 @@ export const CreateInputField = ({
   return (
     <>
       <form
-        className="flex flex-col"
+        className="flex flex-col w-[97%]
+"
         action={async () => {
           const formData = getValues();
           const result = await trigger();
@@ -201,7 +202,7 @@ export const CreateInputField = ({
           <div className="flex flex-col gap-2 w-full">
             <Textarea
               id="content"
-              className="outline-none border-b border-slate-200/50 focus:border-slate-200 w-[90%] px-4 py-2  whitespace-normal resize-none no-scrollbar"
+              className="outline-none border-b border-slate-200/50 focus:border-slate-200  px-4 py-2  whitespace-normal resize-none no-scrollbar"
               placeholder={
                 actionType === "create" && type === "post"
                   ? "What's on your mind?"
@@ -216,7 +217,7 @@ export const CreateInputField = ({
           </div>
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col ">
           {errors.content && (
             <span className="text-rose-500 text-center ">
               ({errors.content.message})
@@ -262,7 +263,7 @@ export const CreateInputField = ({
                     <Image src="/photoIcon.svg" alt="" width={20} height={20} />{" "}
                     {/* Use any icon here */}
                   </label>
-                  {file && <p> {file.name}</p>}
+                  {file && <p> {file.name.slice(0, 20)}</p>}
                 </>
               )}
 

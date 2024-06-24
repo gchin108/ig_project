@@ -55,7 +55,7 @@ export const PostContext = createContext<ReturnType<
 
 type PostProviderProps = React.PropsWithChildren<Props>;
 
-export default function PostnProvider({
+export default function PostProvider({
   children,
   ...props
 }: PostProviderProps) {

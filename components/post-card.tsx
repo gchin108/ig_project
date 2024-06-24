@@ -28,9 +28,10 @@ type Props = {
       likes: (typeof LikeTable.$inferSelect)[];
     })[];
   };
+  mode: "modal" | "normal";
 };
 
-export default function PostCard({ post }: Props) {
+export default function PostCard({ post, mode }: Props) {
   const { sessionUser } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
   }));
@@ -91,7 +92,7 @@ export default function PostCard({ post }: Props) {
           <PostAvatarLogo
             imageUrl={post.postAuthor.image}
             type="post"
-            username={post.postAuthor.name}
+            userId={post.authorId}
           />
           <div className="pl-2 pr-4 flex flex-col flex-1">
             <PostHeader
@@ -112,8 +113,13 @@ export default function PostCard({ post }: Props) {
               type="post"
               postContent={post.content}
               imageUrl={post.imageUrl}
+              mode={mode}
             >
-              <LikeBtn onClick={handleLike} isLiked={post.likeByCurrentUser} />
+              <LikeBtn
+                onClick={handleLike}
+                isLiked={post.likeByCurrentUser}
+                sessionUserId={sessionUser.id}
+              />
               <p>{post.likes.length}</p>
               <button
                 onClick={() => {
@@ -143,7 +149,7 @@ export default function PostCard({ post }: Props) {
         post.comments.map((comment) => {
           return (
             <div key={comment.id} className="ml-14 ">
-              <CommentCard comment={comment} />
+              <CommentCard comment={comment} mode={mode} />
             </div>
           );
         })}

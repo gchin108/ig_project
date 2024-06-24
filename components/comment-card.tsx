@@ -21,9 +21,10 @@ type Props = {
     likeByCurrentUser: boolean;
     likes: (typeof LikeTable.$inferSelect)[];
   };
+  mode: "modal" | "normal";
 };
 
-export const CommentCard = ({ comment }: Props) => {
+export const CommentCard = ({ comment, mode }: Props) => {
   const { sessionUser, onSetReplyReceiverId } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
     onSetReplyReceiverId: state.onSetReplyReceiverId,
@@ -81,7 +82,7 @@ export const CommentCard = ({ comment }: Props) => {
           <PostAvatarLogo
             imageUrl={comment.commentUser.image}
             type="comment"
-            username={comment.commentUser.name}
+            userId={comment.commentUser.id}
           />
           <div className="pl-2 pr-4 flex flex-col flex-1 gap-[2px]">
             <PostHeader
@@ -102,10 +103,12 @@ export const CommentCard = ({ comment }: Props) => {
               replyReceiverName={comment.replyReceiver?.name}
               postContent={comment.content}
               type="comment"
+              mode={mode}
             >
               <LikeBtn
                 onClick={handleLike}
                 isLiked={comment.likeByCurrentUser}
+                sessionUserId={sessionUser.id}
               />
               <p>{comment.likes.length}</p>
               <button

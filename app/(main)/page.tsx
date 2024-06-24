@@ -33,7 +33,7 @@ export default async function Home() {
   // );
   // console.log("legth", y.length);
   return (
-    <div className="h-full py-10 ">
+    <div className="py-10 ">
       <div className="px-2 mb-4">
         {session?.user && <CreateInputField type="post" actionType="create" />}
       </div>
@@ -41,7 +41,7 @@ export default async function Home() {
         posts.map((post) => {
           return (
             <div key={post.id} className=" ">
-              <PostCard post={post} />
+              <PostCard post={post} mode="normal" />
             </div>
           );
         })}
