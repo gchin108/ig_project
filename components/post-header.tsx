@@ -1,4 +1,4 @@
-import { timeSince } from "@/lib/utils";
+import { cn, timeSince } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 
 type Props = {
@@ -6,12 +6,14 @@ type Props = {
   postAuthorName: string | null;
   updatedAtTime: Date | null;
   createdAtTime: Date | null;
+  classname?: string;
 };
 export const PostHeader = ({
   children,
   postAuthorName,
   updatedAtTime,
   createdAtTime,
+  classname,
 }: Props) => {
   const [createdTime, setCreatedTime] = useState<Date | null>(null);
   const [editedTime, setEditedTime] = useState<Date | null>(null);
@@ -25,7 +27,7 @@ export const PostHeader = ({
     set();
   }, [updatedAtTime, createdAtTime]);
   return (
-    <div className="flex items-center justify-between">
+    <div className={cn(`flex items-center justify-between`, classname)}>
       <div className="flex gap-4 items-center">
         <p className="font-bold ">{postAuthorName}</p>
         <p className="text-slate-200/50 text-xs">

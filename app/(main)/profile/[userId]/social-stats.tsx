@@ -1,25 +1,35 @@
+import { FollowActionBtn } from "@/components/follow-action-btn";
 import { Button } from "@/components/ui/button";
+import { FollowerTable, UserTable } from "@/db/schema";
 import React from "react";
 
 type Props = {
-  postCount: number;
+  user:
+    | (typeof UserTable.$inferSelect & {
+        numberOfPosts: number;
+        followers: (typeof FollowerTable.$inferSelect)[];
+        following: (typeof FollowerTable.$inferSelect)[];
+      })
+    | undefined;
+  isFollowing: boolean;
 };
 
-export default function SocialStats({ postCount }: Props) {
+export default function SocialStats({ user, isFollowing }: Props) {
   const stats = [
     {
       title: "posts",
-      value: postCount,
+      value: user?.numberOfPosts,
     },
     {
       title: "followers",
-      value: 110,
+      value: user?.followers.length,
     },
     {
       title: "following",
-      value: 111110,
+      value: user?.following.length,
     },
   ];
+
   return (
     <>
       <ul className="flex gap-10 items-center">
@@ -33,14 +43,6 @@ export default function SocialStats({ postCount }: Props) {
           </li>
         ))}
       </ul>
-      <div className=" mt-4 w-full">
-        <Button
-          variant="secondary"
-          className="bg-sky-600 px-10 w-full lg:w-fit  rounded-xl hover:bg-sky-700 text-white"
-        >
-          Follow
-        </Button>
-      </div>
     </>
   );
 }

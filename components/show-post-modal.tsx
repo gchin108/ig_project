@@ -2,16 +2,13 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
-import { usePostModal } from "@/store/use-post";
-import { useEffect, useState } from "react";
+
 import PostCard from "./post-card";
-import Image from "next/image";
+import PostCard2 from "./post-card2";
 
 type Props = {
   children: React.ReactNode;
@@ -31,23 +28,16 @@ type Props = {
 };
 
 export const ShowPostModal = ({ children, post }: Props) => {
-  console.log("post", post);
+  // console.log("post", post);
 
   return (
     <Dialog>
       <DialogTrigger>{children}</DialogTrigger>
-      <DialogContent className="bg-inherit text-white w-full">
-        <PostCard post={post} mode="modal" />
-        {/* <>
-          <div className="relative h-[1200px] ">
-            <Image
-              alt="post image"
-              src={post.imageUrl}
-              fill
-              className="object-contain"
-            />
-          </div>
-        </> */}
+      <DialogContent className="bg-slate-900 text-white w-full">
+        <DialogHeader>
+          {/* <PostCard2 post={post} mode="modal" /> */}
+          <PostCard post={post} mode="modal" />
+        </DialogHeader>
       </DialogContent>
     </Dialog>
   );

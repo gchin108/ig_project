@@ -1,3 +1,16 @@
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="">{children}</div>;
+import { Sidebar } from "@/components/sidebar";
+
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Sidebar className="hidden lg:flex" />
+      <main className="lg:pl-[256px] h-full pt-[50px] lg:pt-0 ">
+        <div className="h-full max-w-[1056px] mx-auto pt-6  ">{children}</div>
+      </main>
+    </>
+  );
 }

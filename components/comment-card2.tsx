@@ -1,44 +1,37 @@
-"use client";
-import { LikeBtn } from "@/components/like-button";
 import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
-import Image from "next/image";
-import { CommentCard } from "./comment-card";
-import { usePostContext } from "@/store/postProvider";
+
 import { useState, useTransition } from "react";
 
+import { flushSync } from "react-dom";
+import { usePostContext } from "@/store/postProvider";
 import { CreateInputField } from "./create-input-field";
 import { DotActionButton } from "./dot-action-button";
 import { addLike, deletePost, removeLike } from "@/actions/post-actions";
 import { toast } from "sonner";
-import { LikeData } from "@/types/general-types";
 import { PostHeader } from "./post-header";
-import { PostBody } from "./post-body";
 import { PostAvatarLogo } from "./post-avatar-logo";
+import { PostBody } from "./post-body";
+import { LikeBtn } from "./like-button";
+import { LikeData } from "@/types/general-types";
+
 type Props = {
-  post: typeof PostTable.$inferSelect & {
+  comment: typeof CommentTable.$inferSelect & {
+    commentUser: typeof UserTable.$inferSelect;
+    replyReceiver: typeof UserTable.$inferSelect | null;
     likeByCurrentUser: boolean;
-    postAuthor: typeof UserTable.$inferSelect & {
-      likes: (typeof LikeTable.$inferSelect)[];
-    };
     likes: (typeof LikeTable.$inferSelect)[];
-    comments: (typeof CommentTable.$inferSelect & {
-      commentUser: typeof UserTable.$inferSelect;
-      replyReceiver: typeof UserTable.$inferSelect | null;
-      likeByCurrentUser: boolean;
-      likes: (typeof LikeTable.$inferSelect)[];
-    })[];
   };
   mode: "modal" | "normal";
 };
 
-export default function PostCard({ post, mode }: Props) {
-  const { sessionUser } = usePostContext((state) => ({
+export const CommentCard2 = ({ comment, mode }: Props) => {
+  const { sessionUser, onSetReplyReceiverId } = usePostContext((state) => ({
     sessionUser: state.sessionUser,
+    onSetReplyReceiverId: state.onSetReplyReceiverId,
   }));
-  const [isCommenting, setIsCommenting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   const [pending, startTransition] = useTransition();
-
+  const [isEditing, setIsEditing] = useState(false);
   function handleLike() {
     if (!sessionUser.id) {
       return;
@@ -48,10 +41,10 @@ export default function PostCard({ post, mode }: Props) {
         // Type guard
         const data: LikeData = {
           userId: sessionUser.id,
-          postId: post.id,
-          type: "post",
+          commentId: comment.id,
+          type: "comment",
         };
-        if (!post.likeByCurrentUser) {
+        if (!comment.likeByCurrentUser) {
           await addLike(data)
             .then((res) => res.success && toast.success(res.success))
             .catch((err) => toast.error(err));
@@ -65,43 +58,40 @@ export default function PostCard({ post, mode }: Props) {
   }
   function handleDelete() {
     startTransition(async () => {
-      await deletePost(post.id, "post", post.imageUrl)
+      await deletePost(comment.id, "comment")
         .then((res) => res.success && toast.success(res.success))
         .catch((err) => toast.error(err));
     });
   }
 
-  if (!sessionUser) {
-    return null; // TODO: maybe redirect to login
-  }
   return (
     <>
       {isEditing && (
         <CreateInputField
-          type="post"
+          type="comment"
           actionType="edit"
-          exitCreate={() => {
+          exitEdit={() => {
             setIsEditing(false);
           }}
-          postId={post.id}
-          content={post.content}
+          commentId={comment.id}
+          content={comment.content}
         />
       )}
       {!isEditing && (
-        <div className="flex w-full gap-2 p-2 my-2 text-sm">
+        <div className="flex w-full p-2 text-sm">
           <PostAvatarLogo
+            imageUrl={comment.commentUser.image}
+            type="comment"
+            userId={comment.commentUser.id}
             mode={mode}
-            imageUrl={post.postAuthor.image}
-            type="post"
-            userId={post.authorId}
           />
-          <div className="pl-2 pr-4 flex flex-col flex-1">
+          <div className="pl-2 pr-4 flex flex-col gap-[2px]">
             <PostHeader
-              postAuthorName={post.postAuthor.name}
-              updatedAtTime={post.updated_at}
-              createdAtTime={post.created_at}
+              postAuthorName={comment.commentUser.name}
+              updatedAtTime={comment.updated_at}
+              createdAtTime={comment.created_at}
             >
-              {post.authorId === sessionUser.id && (
+              {comment.commentUserId === sessionUser.id && (
                 <DotActionButton
                   onDelete={handleDelete}
                   onEdit={() => {
@@ -111,53 +101,51 @@ export default function PostCard({ post, mode }: Props) {
               )}
             </PostHeader>
             <PostBody
-              type="post"
-              postContent={post.content}
-              imageUrl={post.imageUrl}
+              replyReceiverName={comment.replyReceiver?.name}
+              postContent={comment.content}
+              type="comment"
               mode={mode}
             >
               <LikeBtn
                 onClick={handleLike}
-                isLiked={post.likeByCurrentUser}
+                isLiked={comment.likeByCurrentUser}
                 sessionUserId={sessionUser.id}
               />
-              <p>{post.likes.length}</p>
+              <p>{comment.likes.length}</p>
               {sessionUser.id && (
                 <button
                   onClick={() => {
-                    setIsCommenting(!isCommenting);
+                    setIsReplying(!isReplying);
+                    onSetReplyReceiverId("");
+                    const parentCommentUserId = comment.commentUserId;
+                    flushSync(() => onSetReplyReceiverId(parentCommentUserId));
                   }}
                 >
                   Reply
                 </button>
               )}
             </PostBody>
-
-            {isCommenting && (
+            {/*open reply field */}
+            {isReplying && sessionUser && (
               <div className="mt-4">
                 <CreateInputField
+                  type={
+                    comment.commentUserId !== sessionUser.id //if replying to your own comment, it becomes a comment to the post instead
+                      ? "reply"
+                      : "comment"
+                  }
+                  postId={comment.postId}
                   actionType="create"
-                  type="comment"
-                  postId={post.id}
                   exitCreate={() => {
-                    setIsCommenting(false);
+                    setIsReplying(false);
                   }}
+                  commentId={comment.id}
                 />
               </div>
             )}
           </div>
         </div>
       )}
-      {/* <div className="flex flex-col max-w-[500px] lg:min-w-[400px] "> */}
-      {post.comments.length > 0 &&
-        post.comments.map((comment) => {
-          return (
-            <div key={comment.id} className={`ml-14 `}>
-              <CommentCard comment={comment} mode={mode} />
-            </div>
-          );
-        })}
-      {/* </div> */}
     </>
   );
-}
+};

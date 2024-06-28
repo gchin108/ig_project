@@ -5,18 +5,19 @@ type Props = {
   imageUrl: string | null;
   type: "post" | "comment";
   userId: string;
+  mode: "modal" | "normal";
 };
 
-export const PostAvatarLogo = ({ imageUrl, type, userId }: Props) => {
+export const PostAvatarLogo = ({ imageUrl, type, userId, mode }: Props) => {
   return (
     <div className="">
       <Link href={`/profile/${userId}`}>
-        <div className="min-w-[30px]">
+        <div className="min-w-[30px] lg:min-w-[40px]">
           <Image
             src={imageUrl ? imageUrl : "/lotus.svg"}
             alt="Profile Picture"
-            width={type === "post" ? 40 : 30}
-            height={type === "post" ? 40 : 30}
+            width={mode === "modal" ? 40 : type === "post" ? 40 : 30}
+            height={mode === "modal" ? 40 : type === "post" ? 40 : 30}
             className="rounded-full object-cover"
           />
         </div>

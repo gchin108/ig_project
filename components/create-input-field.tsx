@@ -13,10 +13,10 @@ import {
   createReply,
 } from "@/actions/post-actions";
 import { toast } from "sonner";
-import { autoResize } from "@/lib/utils";
+import { autoResize, cn } from "@/lib/utils";
 import { usePostContext } from "@/store/postProvider";
 import { Textarea } from "./ui/textarea";
-import getPresignedImageUrl from "@/actions/server-utils";
+import { getPresignedImageUrl } from "@/actions/server-utils";
 
 type Props = {
   commentId?: string;
@@ -26,6 +26,7 @@ type Props = {
   type: "post" | "comment" | "reply";
   actionType: "create" | "edit";
   content?: string;
+  className?: string;
 };
 
 export const CreateInputField = ({
@@ -36,6 +37,7 @@ export const CreateInputField = ({
   actionType,
   content,
   exitEdit,
+  className,
 }: Props) => {
   const [query, setQuery] = useState("");
   const { sessionUser, replyReceiverId } = usePostContext((state) => ({
@@ -89,8 +91,7 @@ export const CreateInputField = ({
   return (
     <>
       <form
-        className="flex flex-col w-[97%]
-"
+        className={cn("flex flex-col w-[97%]", className)}
         action={async () => {
           const formData = getValues();
           const result = await trigger();
@@ -206,7 +207,9 @@ export const CreateInputField = ({
               placeholder={
                 actionType === "create" && type === "post"
                   ? "What's on your mind?"
-                  : ""
+                  : actionType === "create" && type === "comment"
+                  ? "add a comment"
+                  : "add a reply"
               }
               rows={1}
               onInput={(e) => autoResize(e.target as HTMLTextAreaElement)}

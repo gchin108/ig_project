@@ -22,25 +22,23 @@ export const PostBody = ({
       {mode === "normal" && (
         <>
           {type === "post" && (
-            <div className=" overflow-hidden max-w-[680px]">
-              <div className="z-[2] ">
-                {imageUrl && (
-                  <Image
-                    alt="img"
-                    src={imageUrl}
-                    height={600}
-                    width={600}
-                    className="object-contain max-h-[500px] w-full"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                )}
-              </div>
+            <div className=" max-w-[950px] ">
+              {imageUrl && (
+                <Image
+                  alt="img"
+                  src={imageUrl}
+                  height={600}
+                  width={600}
+                  className="object-contain max-h-[630px] w-full"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              )}
               <p className="my-2 break-words tracking-wide">{postContent}</p>
               <div className="flex gap-2 items-center">{children}</div>
             </div>
           )}
           {type === "comment" && (
-            <div className="   overflow-hidden max-sm:max-w-[330px] max-w-[630px] ">
+            <div className="   max-sm:max-w-[330px] max-w-[900px] ">
               <div className="mb-3 ">
                 {replyReceiverName && (
                   <span className="mr-2 text-sky-400">
@@ -77,14 +75,14 @@ export const PostBody = ({
             </div>
           )}
           {type === "comment" && (
-            <div className="   overflow-hidden max-sm:max-w-[330px] max-w-[1800px]  ">
-              <div className="mb-3 ">
+            <div className="   overflow-hidden max-sm:max-w-[330px] max-w-[800px] flex flex-col ">
+              <div className="mb-3 text-left">
                 {replyReceiverName && (
                   <span className="mr-2 text-sky-400">
                     @{replyReceiverName}
                   </span>
                 )}
-                <span className="tracking-wide my-2 break-words">
+                <span className="tracking-wide my-2 break-words ">
                   {postContent}
                 </span>
               </div>

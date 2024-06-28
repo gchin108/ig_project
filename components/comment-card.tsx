@@ -111,16 +111,18 @@ export const CommentCard = ({ comment, mode }: Props) => {
                 sessionUserId={sessionUser.id}
               />
               <p>{comment.likes.length}</p>
-              <button
-                onClick={() => {
-                  setIsReplying(!isReplying);
-                  onSetReplyReceiverId("");
-                  const parentCommentUserId = comment.commentUserId;
-                  flushSync(() => onSetReplyReceiverId(parentCommentUserId));
-                }}
-              >
-                Reply
-              </button>
+              {sessionUser.id && (
+                <button
+                  onClick={() => {
+                    setIsReplying(!isReplying);
+                    onSetReplyReceiverId("");
+                    const parentCommentUserId = comment.commentUserId;
+                    flushSync(() => onSetReplyReceiverId(parentCommentUserId));
+                  }}
+                >
+                  Reply
+                </button>
+              )}
             </PostBody>
             {/*open reply field */}
             {isReplying && sessionUser && (

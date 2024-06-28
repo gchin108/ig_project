@@ -56,13 +56,15 @@ export const getPosts = cache(async () => {
   return normalizedData;
 });
 
-export const getAllPostByUserId = cache(async (userId: string) => {
+export const getAllPostsByUserId = cache(async (userId: string) => {
   const session = await auth();
   // console.log("session", session?.user.id);
   const userData = await db.query.UserTable.findFirst({
     where: eq(UserTable.id, userId),
 
     with: {
+      followers: true,
+      following: true,
       posts: {
         orderBy: (post, { asc }) => [asc(post.created_at)],
         with: {

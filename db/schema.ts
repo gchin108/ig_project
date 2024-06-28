@@ -37,7 +37,7 @@ export const UserTable = pgTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
   userName: varchar("userName").unique(),
-
+  bio: varchar("bio", { length: 500 }),
   email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
@@ -50,6 +50,40 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   account: one(accounts),
   replies: many(CommentTable, { relationName: "replyReceiver" }),
   likes: many(LikeTable),
+  following: many(FollowerTable, { relationName: "follower" }),
+  followers: many(FollowerTable, { relationName: "leader" }),
+}));
+
+export const FollowerTable = pgTable(
+  "followers",
+  {
+    id: serial("id").primaryKey(),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+    followerId: text("follower_id")
+      .references(() => UserTable.id, { onDelete: "cascade" })
+      .notNull(),
+    leaderId: text("leader_id")
+      .references(() => UserTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+  },
+  (t) => ({
+    unq: unique().on(t.followerId, t.leaderId),
+  })
+);
+
+export const followerTableRelation = relations(FollowerTable, ({ one }) => ({
+  follower: one(UserTable, {
+    fields: [FollowerTable.followerId],
+    references: [UserTable.id],
+    relationName: "follower",
+  }),
+  leader: one(UserTable, {
+    fields: [FollowerTable.leaderId],
+    references: [UserTable.id],
+    relationName: "leader",
+  }),
 }));
 
 export const PostTable = pgTable("posts", {

@@ -2,8 +2,9 @@
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { S3Client } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
+import { auth } from "@/lib/auth";
 
-export default async function getPresignedImageUrl(
+export async function getPresignedImageUrl(
   fileName: string,
   contentType: string
 ) {
@@ -33,4 +34,10 @@ export default async function getPresignedImageUrl(
     console.log(err);
     return { error: true };
   }
+}
+
+export async function checkAuth() {
+  const session = await auth();
+
+  return session;
 }

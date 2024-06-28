@@ -7,6 +7,7 @@ export const PostSchema = z.object({
   // imageSrc: z.union([z.literal(""), z.string().trim().url()]),
   // authorId: z.string().trim(),
 });
+
 export const pageNumberSchema = z.coerce.number().int().positive().optional();
 
 export const authSchema = z.object({
@@ -15,3 +16,9 @@ export const authSchema = z.object({
 });
 
 export type TAuth = z.infer<typeof authSchema>;
+
+export type BioFormProps = z.infer<typeof BioSchema>;
+
+export const BioSchema = z.object({
+  content: z.string().trim().max(500),
+});
