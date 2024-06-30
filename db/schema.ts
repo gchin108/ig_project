@@ -26,6 +26,7 @@ export const UserTable = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  is_admin: boolean("is_admin").default(false),
 });
 
 export const userTableRelation = relations(UserTable, ({ many, one }) => ({
@@ -37,8 +38,82 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   likes: many(LikeTable),
   following: many(FollowerTable, { relationName: "follower" }),
   followers: many(FollowerTable, { relationName: "leader" }),
+  message_sender: many(MessageTable, { relationName: "sender" }),
+  message_receiver: many(MessageTable, { relationName: "receiver" }),
+  participant1_conversations: many(ConversationTable, {
+    relationName: "participant1",
+  }),
+  participant2_conversations: many(ConversationTable, {
+    relationName: "participant2",
+  }),
 }));
 
+export const MessageTable = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  conversation_id: integer("conversation_id")
+    .references(() => ConversationTable.id, { onDelete: "cascade" })
+    .notNull(),
+  sender_id: text("sender_id")
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .notNull(),
+  receiver_id: text("receiver_id")
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .notNull(),
+  content: text("content").notNull(),
+  is_read: boolean("is_read").default(false),
+});
+
+export const messageTableRelation = relations(MessageTable, ({ one }) => ({
+  conversation: one(ConversationTable, {
+    fields: [MessageTable.conversation_id],
+    references: [ConversationTable.id],
+  }),
+  sender: one(UserTable, {
+    fields: [MessageTable.sender_id],
+    references: [UserTable.id],
+    relationName: "sender",
+  }),
+  receiver: one(UserTable, {
+    fields: [MessageTable.receiver_id],
+    references: [UserTable.id],
+    relationName: "receiver",
+  }),
+}));
+
+export const ConversationTable = pgTable(
+  "conversations",
+  {
+    id: serial("id").primaryKey(),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+    participant1_id: text("participant1_id")
+      .references(() => UserTable.id, { onDelete: "cascade" })
+      .notNull(),
+    participant2_id: text("participant2_id")
+      .references(() => UserTable.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  (t) => ({
+    unq: unique().on(t.participant1_id, t.participant2_id),
+  })
+);
+
+export const conversationTableRelation = relations(
+  ConversationTable,
+  ({ one, many }) => ({
+    participant1: one(UserTable, {
+      fields: [ConversationTable.participant1_id],
+      references: [UserTable.id],
+      relationName: "participant1",
+    }),
+    participant2: one(UserTable, {
+      fields: [ConversationTable.participant2_id],
+      references: [UserTable.id],
+      relationName: "participant2",
+    }),
+    messages: many(MessageTable),
+  })
+);
 export const FollowerTable = pgTable(
   "followers",
   {

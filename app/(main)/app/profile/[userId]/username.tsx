@@ -6,6 +6,7 @@ import React, { useTransition } from "react";
 import { toast } from "sonner";
 import { UserNameForm } from "./username-form";
 import { SignInBtn } from "@/components/sign-in-btn";
+import Link from "next/link";
 type Props = {
   user:
     | (typeof UserTable.$inferSelect & {
@@ -74,7 +75,9 @@ export const Username = ({
           {isFollower ? (
             <div className="flex items-center gap-2">
               <FollowActionBtn onUnfollow={() => handleUnfollow(user?.id)} />
-              <Button>Message</Button>
+              <Button asChild>
+                <Link href={`/app/direct/${user?.id}`}>Message</Link>
+              </Button>
             </div>
           ) : sessionUserId ? (
             <Button
