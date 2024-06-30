@@ -6,23 +6,20 @@ import { BioForm } from "./bio-form";
 type Props = {
   bio: string | undefined | null;
   isProfileUser: boolean;
+  isAddingBio: boolean;
+  setIsAddingBio: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAddingUsername: React.Dispatch<React.SetStateAction<boolean>>;
 };
-export default function ProfileBio({ bio, isProfileUser }: Props) {
-  const [isAddingBio, setIsAddingBio] = useState(false);
-
+export default function ProfileBio({
+  bio,
+  isProfileUser,
+  isAddingBio,
+  setIsAddingBio,
+  setIsAddingUsername,
+}: Props) {
   return (
     <>
       <div className="flex flex-col gap-2 lg:text-base text-sm">
-        {/* <div className="flex justify-end">
-          {isProfileUser && !isAddingBio && (
-            <UserActionBtn
-              onAddBio={() => {
-                setIsAddingBio(true);
-              }}
-              onAddUsername={() => {}}
-            />
-          )}
-        </div> */}
         {isAddingBio ? (
           <BioForm
             onSubmission={() => setIsAddingBio(false)}
@@ -37,7 +34,9 @@ export default function ProfileBio({ bio, isProfileUser }: Props) {
                   onAddBio={() => {
                     setIsAddingBio(true);
                   }}
-                  onAddUsername={() => {}}
+                  onAddUsername={() => {
+                    setIsAddingUsername(true);
+                  }}
                 />
               )}
             </div>

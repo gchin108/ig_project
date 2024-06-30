@@ -86,7 +86,9 @@ export const CommentCard = ({ comment, mode }: Props) => {
           />
           <div className="pl-2 pr-4 flex flex-col flex-1 gap-[2px]">
             <PostHeader
-              postAuthorName={comment.commentUser.name}
+              postAuthorName={
+                comment.commentUser.userName ?? comment.commentUser.name
+              }
               updatedAtTime={comment.updated_at}
               createdAtTime={comment.created_at}
             >
@@ -100,29 +102,35 @@ export const CommentCard = ({ comment, mode }: Props) => {
               )}
             </PostHeader>
             <PostBody
-              replyReceiverName={comment.replyReceiver?.name}
+              replyReceiverName={
+                comment.replyReceiver?.userName ?? comment.replyReceiver?.name
+              }
               postContent={comment.content}
               type="comment"
               mode={mode}
             >
-              <LikeBtn
-                onClick={handleLike}
-                isLiked={comment.likeByCurrentUser}
-                sessionUserId={sessionUser.id}
-              />
-              <p>{comment.likes.length}</p>
-              {sessionUser.id && (
-                <button
-                  onClick={() => {
-                    setIsReplying(!isReplying);
-                    onSetReplyReceiverId("");
-                    const parentCommentUserId = comment.commentUserId;
-                    flushSync(() => onSetReplyReceiverId(parentCommentUserId));
-                  }}
-                >
-                  Reply
-                </button>
-              )}
+              <div className="flex gap-4">
+                <LikeBtn
+                  onClick={handleLike}
+                  isLiked={comment.likeByCurrentUser}
+                  sessionUserId={sessionUser.id}
+                />
+                <p>{comment.likes.length}</p>
+                {sessionUser.id && (
+                  <button
+                    onClick={() => {
+                      setIsReplying(!isReplying);
+                      onSetReplyReceiverId("");
+                      const parentCommentUserId = comment.commentUserId;
+                      flushSync(() =>
+                        onSetReplyReceiverId(parentCommentUserId)
+                      );
+                    }}
+                  >
+                    Reply
+                  </button>
+                )}
+              </div>
             </PostBody>
             {/*open reply field */}
             {isReplying && sessionUser && (

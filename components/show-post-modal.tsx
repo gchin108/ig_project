@@ -8,7 +8,6 @@ import {
 import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
 
 import PostCard from "./post-card";
-import PostCard2 from "./post-card2";
 
 type Props = {
   children: React.ReactNode;
@@ -35,7 +34,6 @@ export const ShowPostModal = ({ children, post }: Props) => {
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="bg-slate-900 text-white w-full">
         <DialogHeader>
-          {/* <PostCard2 post={post} mode="modal" /> */}
           <PostCard post={post} mode="modal" />
         </DialogHeader>
       </DialogContent>

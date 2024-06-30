@@ -20,6 +20,7 @@ export const FollowActionBtn = ({ onUnfollow }: Props) => {
           className="outline-none rounded-xl bg-slate-700 px-4 hover:bg-slate-800 hover:text-white"
         >
           Following
+          <ArrowDown size={15} className="ml-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

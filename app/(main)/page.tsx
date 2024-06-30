@@ -2,12 +2,7 @@ import { auth } from "@/lib/auth";
 
 import PostCard from "@/components/post-card";
 import { CreateInputField } from "@/components/create-input-field";
-import {
-  getPostCountFromUsers,
-  getPosts,
-  getPostsWithComments,
-} from "@/lib/queries";
-import { db } from "@/db/db";
+import { getPosts } from "@/lib/queries";
 
 export default async function Home() {
   const session = await auth();

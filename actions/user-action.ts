@@ -32,6 +32,32 @@ export async function addBio(data: { content: string }) {
   }
 }
 
+export async function addUserName(username: string) {
+  const session = await checkAuth();
+  if (!session?.user.id) {
+    return { error: "Unauthorized" };
+  }
+  const usernameAlreadyExist = await db.query.UserTable.findFirst({
+    where: eq(UserTable.userName, username),
+  });
+  if (usernameAlreadyExist) {
+    return { error: "Username already exists" };
+  }
+  try {
+    await db
+      .update(UserTable)
+      .set({
+        userName: username,
+      })
+      .where(eq(UserTable.id, session.user.id));
+    revalidatePath("/profile");
+    return { success: true };
+  } catch (err) {
+    console.log(err);
+    return { error: "An error occurred while adding username." };
+  }
+}
+
 export async function followUser(userId: string) {
   const session = await checkAuth();
   if (!session?.user.id || session.user.id === userId) {

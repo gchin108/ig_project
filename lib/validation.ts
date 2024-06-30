@@ -22,3 +22,8 @@ export type BioFormProps = z.infer<typeof BioSchema>;
 export const BioSchema = z.object({
   content: z.string().trim().max(500),
 });
+export type UserNameFormProps = z.infer<typeof UsernameSchema>;
+
+export const UsernameSchema = z.object({
+  username: z.string().trim().max(10),
+});

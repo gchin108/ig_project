@@ -34,7 +34,7 @@ export const PostBody = ({
                 />
               )}
               <p className="my-2 break-words tracking-wide">{postContent}</p>
-              <div className="flex gap-2 items-center">{children}</div>
+              <>{children}</>
             </div>
           )}
           {type === "comment" && (
@@ -49,7 +49,7 @@ export const PostBody = ({
                   {postContent}
                 </span>
               </div>
-              <div className="flex gap-4">{children}</div>
+              <>{children}</>
             </div>
           )}
         </>
@@ -57,8 +57,8 @@ export const PostBody = ({
       {mode === "modal" && (
         <>
           {type === "post" && (
-            <div className=" ">
-              <div className="  z-[2] flex ">
+            <>
+              <>
                 {imageUrl && (
                   <Image
                     alt="img"
@@ -69,10 +69,10 @@ export const PostBody = ({
                     sizes="(max-width: 768px) 100vw, (max-width: 900px) 50vw, 33vw"
                   />
                 )}
-              </div>
+              </>
               <p className="my-2 break-words tracking-wide">{postContent}</p>
-              <div className="flex gap-2 items-center">{children}</div>
-            </div>
+              <>{children}</>
+            </>
           )}
           {type === "comment" && (
             <div className="   overflow-hidden max-sm:max-w-[330px] max-w-[800px] flex flex-col ">
@@ -86,7 +86,7 @@ export const PostBody = ({
                   {postContent}
                 </span>
               </div>
-              <div className="flex gap-4">{children}</div>
+              <>{children}</>
             </div>
           )}
         </>

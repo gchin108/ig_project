@@ -90,14 +90,13 @@ export default function PostCard({ post, mode }: Props) {
       {!isEditing && (
         <div className="flex w-full gap-2 p-2 my-2 text-sm">
           <PostAvatarLogo
-            mode={mode}
             imageUrl={post.postAuthor.image}
             type="post"
             userId={post.authorId}
           />
           <div className="pl-2 pr-4 flex flex-col flex-1">
             <PostHeader
-              postAuthorName={post.postAuthor.name}
+              postAuthorName={post.postAuthor.userName ?? post.postAuthor.name}
               updatedAtTime={post.updated_at}
               createdAtTime={post.created_at}
             >
@@ -116,21 +115,23 @@ export default function PostCard({ post, mode }: Props) {
               imageUrl={post.imageUrl}
               mode={mode}
             >
-              <LikeBtn
-                onClick={handleLike}
-                isLiked={post.likeByCurrentUser}
-                sessionUserId={sessionUser.id}
-              />
-              <p>{post.likes.length}</p>
-              {sessionUser.id && (
-                <button
-                  onClick={() => {
-                    setIsCommenting(!isCommenting);
-                  }}
-                >
-                  Reply
-                </button>
-              )}
+              <div className="flex gap-2 items-center">
+                <LikeBtn
+                  onClick={handleLike}
+                  isLiked={post.likeByCurrentUser}
+                  sessionUserId={sessionUser.id}
+                />
+                <p>{post.likes.length}</p>
+                {sessionUser.id && (
+                  <button
+                    onClick={() => {
+                      setIsCommenting(!isCommenting);
+                    }}
+                  >
+                    Reply
+                  </button>
+                )}
+              </div>
             </PostBody>
 
             {isCommenting && (

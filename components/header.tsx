@@ -1,4 +1,3 @@
-import { logIn } from "@/actions/auth-actions";
 import { auth } from "@/lib/auth";
 import {
   PencilIcon,

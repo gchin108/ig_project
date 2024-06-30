@@ -1,5 +1,3 @@
-import React from "react";
-
 import ProfileHeader from "./profile-header";
 import { PostGrid } from "./post-grid";
 import { getAllPostsByUserId } from "@/lib/queries";
@@ -12,6 +10,7 @@ type Props = {
 
 export default async function ProfilePage({ params }: Props) {
   const { user, posts } = await getAllPostsByUserId(params.userId);
+  // console.log("user", user);
 
   return (
     <>
