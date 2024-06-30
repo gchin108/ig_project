@@ -38,3 +38,6 @@ export function getKeyFromUrl(url: string) {
   const extractedKey = url.slice(lastSlashIndex + 1);
   return extractedKey;
 }
+export function sleep(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}

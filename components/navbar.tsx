@@ -19,7 +19,7 @@ export const Navbar = async () => {
             className="rounded-full object-cover"
           />
         )}
-        <SignInBtn type={isLoggedIn ? "logOut" : "logIn"} />
+        {/* <SignInBtn type={isLoggedIn ? "logOut" : "logIn"} /> */}
       </div>
     </div>
   );

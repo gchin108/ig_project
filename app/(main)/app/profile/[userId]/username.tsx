@@ -2,10 +2,10 @@ import { followUser, unfollowUser } from "@/actions/user-action";
 import { FollowActionBtn } from "@/components/follow-action-btn";
 import { Button } from "@/components/ui/button";
 import { FollowerTable, UserTable } from "@/db/schema";
-import Link from "next/link";
 import React, { useTransition } from "react";
 import { toast } from "sonner";
 import { UserNameForm } from "./username-form";
+import { SignInBtn } from "@/components/sign-in-btn";
 type Props = {
   user:
     | (typeof UserTable.$inferSelect & {
@@ -85,12 +85,12 @@ export const Username = ({
               Follow
             </Button>
           ) : (
-            <Button
-              variant="secondary"
-              className="bg-sky-600 px-10 w-full lg:w-fit  rounded-xl hover:bg-sky-700 text-white"
+            <SignInBtn
+              type="logIn"
+              className="bg-sky-600 px-12 w-full lg:w-fit  rounded-xl hover:bg-sky-700 text-white py-2"
             >
-              <Link href="/api/auth/signin">Follow</Link>
-            </Button>
+              Follow
+            </SignInBtn>
           )}
         </div>
       )}

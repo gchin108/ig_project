@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { LogOutIcon, LogInIcon } from "lucide-react";
 type Props = {
   className?: string;
 };
@@ -22,7 +23,7 @@ export const Sidebar = async ({ className }: Props) => {
         <h1 className="my-10 text-4xl ">Socials</h1>
         <ul>
           <li>
-            <Link href="/">Home</Link>
+            <Link href="/app">Home</Link>
           </li>
           <li>Profile</li>
           <li>Settings</li>
@@ -38,7 +39,12 @@ export const Sidebar = async ({ className }: Props) => {
             className="rounded-full object-cover"
           />
         )}
-        <SignInBtn type={isLoggedIn ? "logOut" : "logIn"} />
+        <SignInBtn
+          type={isLoggedIn ? "logOut" : "logIn"}
+          className="w-[50px] h-[50px]"
+        >
+          {!isLoggedIn ? <LogInIcon /> : <LogOutIcon />}
+        </SignInBtn>
       </div>
     </div>
   );

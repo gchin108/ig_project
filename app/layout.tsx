@@ -5,8 +5,8 @@ import { Navbar } from "@/components/navbar";
 import { Header } from "@/components/header";
 import { Toaster } from "sonner";
 import PostProvider from "@/store/postProvider";
-import { auth } from "@/lib/auth";
-import { Sidebar } from "@/components/sidebar";
+
+import { AppModal } from "./(marketing)/app-modal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,27 +20,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-
-  const sessionUser = {
-    id: session?.user.id,
-    name: session?.user.name,
-    image: session?.user.image,
-  };
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* <Navbar /> */}
-        {/* <Sidebar /> */}
-        {/* <div className="flex justify-center items-center  "> */}
-        {/* <ShowPostModal /> */}
-        {/* <div className="max-w-[1000px] w-full"> */} {/* <Header /> */}
-        <div className="h-full">
-          <PostProvider sessionUser={sessionUser}>{children}</PostProvider>
-        </div>
+        <AppModal />
+        <div className="h-full">{children}</div>
         <Toaster duration={3000} position="bottom-left" />
-        {/* </div> */}
-        {/* </div> */}
       </body>
     </html>
   );

@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import PostCard from "@/components/post-card";
 import { CreateInputField } from "@/components/create-input-field";
 import { getPosts } from "@/lib/queries";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 export default async function Home() {
   const session = await auth();
@@ -18,7 +20,9 @@ export default async function Home() {
         posts.map((post) => {
           return (
             <div key={post.id} className=" ">
-              <PostCard post={post} mode="normal" />
+              <Suspense fallback={<Loading />}>
+                <PostCard post={post} mode="normal" />
+              </Suspense>
             </div>
           );
         })}

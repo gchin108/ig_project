@@ -3,8 +3,10 @@ import { db } from "@/db/db";
 import { eq, inArray, sql } from "drizzle-orm";
 import { UserTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { sleep } from "./utils";
 
 export const getPosts = cache(async () => {
+  // await sleep(2000);
   const session = await auth();
   // console.log("session", session?.user.id);
   const posts = await db.query.PostTable.findMany({

@@ -17,7 +17,7 @@ export const Header = async () => {
         <HomeIcon />
       </Link>
       {session?.user && (
-        <Link href={`/profile/${session?.user.id}`}>
+        <Link href={`/app/profile/${session?.user.id}`}>
           <PencilIcon />
         </Link>
       )}

@@ -27,7 +27,7 @@ export const FollowerModal = ({ children, followerList, type }: Props) => {
         {followerList && followerList.length > 0 ? (
           followerList.map((follower) => (
             <div key={follower.id} className="flex gap-2 items-center p-10">
-              <Link href={`/profile/${follower.id}`}>
+              <Link href={`/app/profile/${follower.id}`}>
                 {follower.image && (
                   <Image
                     src={follower.image}

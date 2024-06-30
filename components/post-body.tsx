@@ -65,7 +65,7 @@ export const PostBody = ({
                     src={imageUrl}
                     height={600}
                     width={600}
-                    className="object-contain   w-[2000px] max-h-[1200px] mx-auto"
+                    className="object-contain   w-full max-h-[1200px] mx-auto"
                     sizes="(max-width: 768px) 100vw, (max-width: 900px) 50vw, 33vw"
                   />
                 )}

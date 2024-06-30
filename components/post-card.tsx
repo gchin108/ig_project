@@ -39,6 +39,7 @@ export default function PostCard({ post, mode }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [pending, startTransition] = useTransition();
 
+  // console.log("sessionUserId", sessionUser.id);
   function handleLike() {
     if (!sessionUser.id) {
       return;
