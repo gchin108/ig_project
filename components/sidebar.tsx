@@ -25,8 +25,16 @@ export const Sidebar = async ({ className }: Props) => {
           <li>
             <Link href="/app">Home</Link>
           </li>
-          <li>Profile</li>
-          <li>Settings</li>
+          {session?.user.id && (
+            <>
+              <li>
+                <Link href={`/app/profile/${session?.user?.id}`}>Profile</Link>
+              </li>
+              <li>
+                <Link href="/app/messages">Messages</Link>
+              </li>
+            </>
+          )}
         </ul>
       </div>
       <div className="ml-auto flex items-center justify-center gap-4">

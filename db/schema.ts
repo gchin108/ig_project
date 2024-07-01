@@ -81,22 +81,16 @@ export const messageTableRelation = relations(MessageTable, ({ one }) => ({
   }),
 }));
 
-export const ConversationTable = pgTable(
-  "conversations",
-  {
-    id: serial("id").primaryKey(),
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    participant1_id: text("participant1_id")
-      .references(() => UserTable.id, { onDelete: "cascade" })
-      .notNull(),
-    participant2_id: text("participant2_id")
-      .references(() => UserTable.id, { onDelete: "cascade" })
-      .notNull(),
-  },
-  (t) => ({
-    unq: unique().on(t.participant1_id, t.participant2_id),
-  })
-);
+export const ConversationTable = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  participant1_id: text("participant1_id")
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .notNull(),
+  participant2_id: text("participant2_id")
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .notNull(),
+});
 
 export const conversationTableRelation = relations(
   ConversationTable,

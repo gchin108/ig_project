@@ -3,6 +3,9 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { S3Client } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "@/lib/auth";
+import { db } from "@/db/db";
+import { UserTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function getPresignedImageUrl(
   fileName: string,
@@ -41,3 +44,18 @@ export async function checkAuth() {
 
   return session;
 }
+
+export const verifyUserId = async (userId: string) => {
+  try {
+    const user = await db.query.UserTable.findFirst({
+      where: eq(UserTable.id, userId),
+    });
+    if (!user) {
+      return { error: true };
+    }
+    return { success: true };
+  } catch (err) {
+    console.log("verifyUserId error", err);
+    return { error: true };
+  }
+};
