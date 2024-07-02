@@ -4,14 +4,20 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOutIcon, LogInIcon } from "lucide-react";
+import { getUnreadMessages } from "@/actions/message-action";
 type Props = {
   className?: string;
 };
 export const Sidebar = async ({ className }: Props) => {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
-  // console.log("isLoggedIn", isLoggedIn);
-  // console.log("session", session);
+  const { unreadMessages } = await getUnreadMessages();
+  // console.log("unreadMessages", unreadMessages);
+  const unreadMessageCountTotal = unreadMessages?.reduce(
+    (acc, item) => acc + item.unreadMsgCount,
+    0
+  );
+
   return (
     <div
       className={cn(
@@ -31,7 +37,13 @@ export const Sidebar = async ({ className }: Props) => {
                 <Link href={`/app/profile/${session?.user?.id}`}>Profile</Link>
               </li>
               <li>
-                <Link href="/app/messages">Messages</Link>
+                <Link href="/app/messages">{`Messages ${
+                  unreadMessages &&
+                  unreadMessages?.length > 0 &&
+                  unreadMessageCountTotal
+                    ? `(${unreadMessageCountTotal})`
+                    : ""
+                }`}</Link>
               </li>
             </>
           )}

@@ -19,7 +19,7 @@ export const LikeBtn = ({
   return (
     <button onClick={onClick}>
       {isLiked && sessionUserId ? (
-        <HeartFilledIcon color="red" className={cn(heartFilled)} />
+        <HeartFilledIcon className={cn(heartFilled)} />
       ) : (
         <HeartIcon className={cn(heart)} />
       )}

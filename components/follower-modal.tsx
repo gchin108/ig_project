@@ -20,13 +20,16 @@ export const FollowerModal = ({ children, followerList, type }: Props) => {
   return (
     <Dialog>
       <DialogTrigger>{children}</DialogTrigger>
-      <DialogContent className="bg-inherit">
+      <DialogContent className="bg-inherit ">
         {/* <DialogHeader>
          
         </DialogHeader> */}
         {followerList && followerList.length > 0 ? (
           followerList.map((follower) => (
-            <div key={follower.id} className="flex gap-2 items-center p-10">
+            <div
+              key={follower.id}
+              className="flex gap-2 items-center min-w-[200px] "
+            >
               <Link href={`/app/profile/${follower.id}`}>
                 {follower.image && (
                   <Image

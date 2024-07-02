@@ -121,6 +121,8 @@ export default function PostCard({ post, mode }: Props) {
                   onClick={handleLike}
                   isLiked={post.likeByCurrentUser}
                   sessionUserId={sessionUser.id}
+                  heartFilled="text-red-600 w-[22px] h-[20px]"
+                  heart="w-[22px] h-[20px]"
                 />
                 <p>{post.likes.length}</p>
                 {sessionUser.id && (

@@ -278,7 +278,8 @@ export const sessions = pgTable("session", {
   sessionToken: text("sessionToken").primaryKey(),
   userId: text("userId")
     .notNull()
-    .references(() => UserTable.id, { onDelete: "cascade" }),
+    .references(() => UserTable.id, { onDelete: "cascade" })
+    .unique(),
   expires: timestamp("expires", { mode: "date" }).notNull(),
 });
 

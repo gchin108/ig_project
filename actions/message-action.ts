@@ -3,35 +3,107 @@
 import { cache } from "react";
 import { db } from "@/db/db";
 import { checkAuth } from "./server-utils";
-import { and, asc, eq, inArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { ConversationTable, MessageTable, UserTable } from "@/db/schema";
 import { MessageSchema } from "@/lib/validation";
 import { revalidatePath } from "next/cache";
+import { alias } from "drizzle-orm/pg-core";
 
-export const getMessages = cache(async () => {
+export const readMessage = async (messageIds: number[]) => {
+  try {
+    const message = await db
+      .update(MessageTable)
+      .set({ is_read: true })
+      .where(inArray(MessageTable.id, messageIds))
+      .returning({ senderId: MessageTable.sender_id });
+    revalidatePath("/app");
+    revalidatePath(`/app/direct/${message[0].senderId}`);
+    // console.log("senderId", message[0].senderId); //checks out
+    return { success: "Message read" };
+  } catch (err) {
+    console.log(err);
+    return { error: "Failed to read message" };
+  }
+};
+
+export const getUnreadMessages = cache(async () => {
+  const session = await checkAuth();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+  const findConversation = await db
+    .select()
+    .from(ConversationTable)
+    .where(
+      or(
+        eq(ConversationTable.participant1_id, session.user.id),
+        eq(ConversationTable.participant2_id, session.user.id)
+      )
+    );
+  if (findConversation.length === 0) {
+    return { error: "Failed to get conversation" };
+  }
+  try {
+    const unreadMessages = await db
+      .select({
+        userName: UserTable.userName,
+        sender_id: MessageTable.sender_id,
+        unreadMsgCount: sql<number>`cast(count(${MessageTable.id}) as int)`, // aggregate function
+      })
+      .from(MessageTable)
+      .leftJoin(UserTable, eq(MessageTable.sender_id, UserTable.id))
+      .where(
+        and(
+          eq(MessageTable.receiver_id, session.user.id),
+          eq(MessageTable.is_read, false)
+        )
+      )
+      .groupBy(MessageTable.sender_id, UserTable.userName);
+    return {
+      unreadMessages,
+      success: true,
+    };
+  } catch (err) {
+    console.log(err);
+    return { error: "Failed to get unread messages" };
+  }
+});
+
+export const getMessages = cache(async (sessionUserId: string) => {
+  const sq = db
+    .select()
+    .from(ConversationTable)
+    .where(
+      or(
+        eq(ConversationTable.participant1_id, sessionUserId),
+        eq(ConversationTable.participant2_id, sessionUserId)
+      )
+    )
+    .as("sq");
+  const sq2 = db
+    .select({
+      conversation_id: sq.id,
+      participant1_id: sq.participant1_id,
+      participant2_id: sq.participant2_id,
+      participant1_name: UserTable.name,
+      participant1_image: UserTable.image,
+    })
+    .from(sq)
+    .leftJoin(UserTable, eq(sq.participant1_id, UserTable.id))
+    .as("sq2");
+
   const messages = await db
     .select({
-      id: MessageTable.id,
-      conversation_id: MessageTable.conversation_id,
-      content: MessageTable.content,
-      sender_id: MessageTable.sender_id,
-      created_at: MessageTable.created_at,
-      name: UserTable.name,
-      userImage_Url: UserTable.image,
+      conversation_id: sq2.conversation_id,
+      participant1_id: sq2.participant1_id,
+      participant2_id: sq2.participant2_id,
+      participant1_name: sq2.participant1_name,
+      participant1_image: sq2.participant1_image,
+      participant2_name: UserTable.name,
+      participant2_image: UserTable.image,
     })
-    .from(MessageTable)
-    .orderBy(asc(MessageTable.created_at))
-
-    .leftJoin(UserTable, eq(MessageTable.sender_id, UserTable.id))
-    .groupBy(
-      MessageTable.id,
-      MessageTable.conversation_id,
-      MessageTable.content,
-      MessageTable.sender_id,
-      MessageTable.created_at,
-      UserTable.name,
-      UserTable.image
-    );
+    .from(sq2)
+    .leftJoin(UserTable, eq(sq2.participant2_id, UserTable.id));
 
   return messages;
 });
@@ -88,6 +160,7 @@ export const getConvensation = cache(
       try {
         const conversation = await db.query.MessageTable.findMany({
           where: eq(MessageTable.conversation_id, SelectedConversationId),
+          orderBy: asc(MessageTable.created_at),
           with: {
             sender: true,
             receiver: true,

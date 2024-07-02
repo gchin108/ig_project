@@ -1,4 +1,4 @@
-import { getConvensation } from "@/actions/message-action";
+import { getConvensation, readMessage } from "@/actions/message-action";
 
 import { auth } from "@/lib/auth";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { MessageForm } from "./messege-form";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { verifyUserId } from "@/actions/server-utils";
+import { CheckIcon } from "lucide-react";
 
 type Props = {
   params: {
@@ -33,8 +34,17 @@ export default async function DirectPage({ params }: Props) {
     return <div>Failed to load conversation</div>;
   }
   // console.log("conversation", conversation);
-  const participant1 = conversation && conversation[0];
-  // console.log("participant1", participant1);
+  const unreadMessageIds = conversation
+    .filter((msg) => msg.sender.id !== sessionUserId && msg.is_read === false)
+    .map((msg) => msg.id);
+
+  // console.log("unreadMessageIds", unreadMessageIds);
+  if (unreadMessageIds.length > 0) {
+    const response = await readMessage(unreadMessageIds);
+    if (response.error) {
+      console.log("Failed to read message", response.error);
+    }
+  }
 
   return (
     <>
@@ -58,7 +68,7 @@ export default async function DirectPage({ params }: Props) {
         {conversation?.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-2 items-center ${
+            className={`flex flex-col  ${
               message.sender.id === session.user.id ? "ml-auto" : "mr-auto"
             }`}
           >
@@ -73,6 +83,15 @@ export default async function DirectPage({ params }: Props) {
             >
               {message.content}
             </p>
+            {message.sender.id === session.user.id && (
+              <p className="text-sm text-slate-200/50 ml-auto">
+                {message.is_read ? (
+                  <CheckIcon size={20} className="text-green-400" />
+                ) : (
+                  <CheckIcon size={20} className="text-slate-400" />
+                )}
+              </p>
+            )}
           </div>
         ))}
       </div>
