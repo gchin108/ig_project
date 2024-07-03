@@ -5,6 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogOutIcon, LogInIcon } from "lucide-react";
 import { getUnreadMessages } from "@/actions/message-action";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { getNotifications } from "@/actions/user-action";
 type Props = {
   className?: string;
 };
@@ -12,11 +18,14 @@ export const Sidebar = async ({ className }: Props) => {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
   const { unreadMessages } = await getUnreadMessages();
-  // console.log("unreadMessages", unreadMessages);
+
   const unreadMessageCountTotal = unreadMessages?.reduce(
     (acc, item) => acc + item.unreadMsgCount,
     0
   );
+  const { res } = await getNotifications();
+
+  // console.log(res);
 
   return (
     <div
@@ -45,6 +54,38 @@ export const Sidebar = async ({ className }: Props) => {
                     : ""
                 }`}</Link>
               </li>
+              <Popover>
+                <PopoverTrigger>
+                  <li>{`Notification ${
+                    res?.length && res?.length > 0 ? res?.length : ""
+                  }`}</li>
+                </PopoverTrigger>
+                <PopoverContent className="bg-black text-white">
+                  {res?.map((n) => (
+                    <div key={n.id} className="flex gap-2 items-center">
+                      <div className="m-w-[30px]">
+                        {n.userImage && (
+                          <Image
+                            src={n.userImage}
+                            alt="profile"
+                            width={30}
+                            height={30}
+                            className="rounded-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <div>{`@${
+                          n.userName
+                        } likes your post "${n.postContent?.slice(
+                          0,
+                          15
+                        )}" `}</div>
+                      </div>
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
             </>
           )}
         </ul>

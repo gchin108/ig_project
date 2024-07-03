@@ -50,6 +50,7 @@ export default function PostCard({ post, mode }: Props) {
         const data: LikeData = {
           userId: sessionUser.id,
           postId: post.id,
+          postAuthorId: post.authorId,
           type: "post",
         };
         if (!post.likeByCurrentUser) {

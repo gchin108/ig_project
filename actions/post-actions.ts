@@ -1,7 +1,13 @@
 "use server";
 
 import { db } from "@/db/db";
-import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
+import {
+  CommentTable,
+  LikeTable,
+  NotificationTable,
+  PostTable,
+  UserTable,
+} from "@/db/schema";
 import { PostSchema } from "@/lib/validation";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -10,6 +16,8 @@ import { getKeyFromUrl } from "@/lib/utils";
 
 export const addLike = async (data: {
   postId?: string;
+  postAuthorId?: string;
+  commentUserId?: string;
   userId: string;
   commentId?: string;
   type: "post" | "comment";
@@ -20,13 +28,21 @@ export const addLike = async (data: {
         userId: data.userId,
         postId: data.postId,
       });
+      await db.insert(NotificationTable).values({
+        userId: data.userId,
+        postId: data.postId,
+        type: "likePost",
+        recipientId: data.postAuthorId,
+      });
     } else if (data.type === "comment") {
       await db.insert(LikeTable).values({
         userId: data.userId,
         commentId: data.commentId,
       });
     }
-    revalidatePath("/");
+
+    revalidatePath("/app");
+    // revalidatePath(`/app`);
     return { success: `${data.type} liked!` };
   } catch (err) {
     console.log(err);
@@ -49,6 +65,14 @@ export const removeLike = async (data: {
             eq(LikeTable.postId, data.postId)
           )
         );
+      await db
+        .delete(NotificationTable)
+        .where(
+          and(
+            eq(NotificationTable.userId, data.userId),
+            eq(NotificationTable.postId, data.postId)
+          )
+        );
     } else if (data.type === "comment" && typeof data.commentId === "string") {
       await db
         .delete(LikeTable)
@@ -59,7 +83,7 @@ export const removeLike = async (data: {
           )
         );
     }
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: "like removed!" };
   } catch (err) {
     console.log(err);
@@ -83,7 +107,7 @@ export const createPost = async (
       authorId: authorId,
       imageUrl: imgUrl,
     });
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: "Post created!" };
   } catch (err) {
     console.log(err);
@@ -117,7 +141,7 @@ export const createComment = async (
       postId: otherData.postId,
     });
 
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: "Comment sent!" };
   } catch (err) {
     console.log(err);
@@ -149,7 +173,7 @@ export const createReply = async (
       replyReceiver: otherData.replyReceiverId,
     });
 
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: "Reply sent!" };
   } catch (err) {
     console.log(err);
@@ -185,7 +209,7 @@ export const deletePost = async (
       const imgKey = getKeyFromUrl(imgUrl as string);
       await deleteS3Image(imgKey);
     }
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: `${type} deleted!` };
   } catch (err) {
     console.log(err);
@@ -228,7 +252,7 @@ export const updatePost = async (
         })
         .where(eq(PostTable.id, id));
     }
-    revalidatePath("/");
+    revalidatePath("/app");
     return { success: `${type} edited!` };
   } catch (err) {
     console.log(err);

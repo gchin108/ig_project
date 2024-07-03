@@ -46,7 +46,63 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   participant2_conversations: many(ConversationTable, {
     relationName: "participant2",
   }),
+  notifications: many(NotificationTable),
+  actionTriggerer: many(NotificationTable, { relationName: "actionTriggerer" }),
+  recipient: many(NotificationTable, { relationName: "recipient" }),
 }));
+export const NotificationEnums = pgEnum("type", [
+  "likePost",
+  "likeComment",
+  "commentPost",
+  "commentComment",
+  "message",
+  "follow",
+]);
+export const NotificationTable = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+    userId: text("user_id")
+      .references(() => UserTable.id, { onDelete: "cascade" })
+      .notNull(),
+    postId: text("post_id").references(() => PostTable.id, {
+      onDelete: "cascade",
+    }),
+    messageId: integer("message_id").references(() => MessageTable.id, {
+      onDelete: "cascade",
+    }),
+    recipientId: text("recipient_id").references(() => UserTable.id, {
+      onDelete: "cascade",
+    }),
+    commentId: text("comment_id").references(() => CommentTable.id, {
+      onDelete: "cascade",
+    }),
+    type: NotificationEnums("type").notNull(),
+    content: text("content"),
+    isRead: boolean("is_read").default(false),
+  },
+  (t) => ({
+    unq: unique().on(t.userId, t.postId, t.commentId),
+    unq2: unique().on(t.userId, t.messageId),
+  })
+);
+
+export const notificationTableRelation = relations(
+  NotificationTable,
+  ({ one }) => ({
+    user: one(UserTable, {
+      fields: [NotificationTable.userId],
+      references: [UserTable.id],
+      relationName: "actionTriggerer",
+    }),
+    recipient: one(UserTable, {
+      fields: [NotificationTable.recipientId],
+      references: [UserTable.id],
+      relationName: "recipient",
+    }),
+  })
+);
 
 export const MessageTable = pgTable("messages", {
   id: serial("id").primaryKey(),
@@ -64,22 +120,25 @@ export const MessageTable = pgTable("messages", {
   is_read: boolean("is_read").default(false),
 });
 
-export const messageTableRelation = relations(MessageTable, ({ one }) => ({
-  conversation: one(ConversationTable, {
-    fields: [MessageTable.conversation_id],
-    references: [ConversationTable.id],
-  }),
-  sender: one(UserTable, {
-    fields: [MessageTable.sender_id],
-    references: [UserTable.id],
-    relationName: "sender",
-  }),
-  receiver: one(UserTable, {
-    fields: [MessageTable.receiver_id],
-    references: [UserTable.id],
-    relationName: "receiver",
-  }),
-}));
+export const messageTableRelation = relations(
+  MessageTable,
+  ({ one, many }) => ({
+    conversation: one(ConversationTable, {
+      fields: [MessageTable.conversation_id],
+      references: [ConversationTable.id],
+    }),
+    sender: one(UserTable, {
+      fields: [MessageTable.sender_id],
+      references: [UserTable.id],
+      relationName: "sender",
+    }),
+    receiver: one(UserTable, {
+      fields: [MessageTable.receiver_id],
+      references: [UserTable.id],
+      relationName: "receiver",
+    }),
+  })
+);
 
 export const ConversationTable = pgTable("conversations", {
   id: serial("id").primaryKey(),
@@ -127,18 +186,21 @@ export const FollowerTable = pgTable(
   })
 );
 
-export const followerTableRelation = relations(FollowerTable, ({ one }) => ({
-  follower: one(UserTable, {
-    fields: [FollowerTable.followerId],
-    references: [UserTable.id],
-    relationName: "follower",
-  }),
-  leader: one(UserTable, {
-    fields: [FollowerTable.leaderId],
-    references: [UserTable.id],
-    relationName: "leader",
-  }),
-}));
+export const followerTableRelation = relations(
+  FollowerTable,
+  ({ one, many }) => ({
+    follower: one(UserTable, {
+      fields: [FollowerTable.followerId],
+      references: [UserTable.id],
+      relationName: "follower",
+    }),
+    leader: one(UserTable, {
+      fields: [FollowerTable.leaderId],
+      references: [UserTable.id],
+      relationName: "leader",
+    }),
+  })
+);
 
 export const PostTable = pgTable("posts", {
   id: text("id")

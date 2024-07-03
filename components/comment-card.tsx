@@ -42,6 +42,7 @@ export const CommentCard = ({ comment, mode }: Props) => {
         const data: LikeData = {
           userId: sessionUser.id,
           commentId: comment.id,
+          commentUserId: comment.commentUserId,
           type: "comment",
         };
         if (!comment.likeByCurrentUser) {
