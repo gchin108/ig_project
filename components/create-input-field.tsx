@@ -27,6 +27,7 @@ type Props = {
   actionType: "create" | "edit";
   content?: string;
   className?: string;
+  postAuthorId?: string;
 };
 
 export const CreateInputField = ({
@@ -38,6 +39,7 @@ export const CreateInputField = ({
   content,
   exitEdit,
   className,
+  postAuthorId,
 }: Props) => {
   const [query, setQuery] = useState("");
   const { sessionUser, replyReceiverId } = usePostContext((state) => ({
@@ -167,6 +169,7 @@ export const CreateInputField = ({
             otherData = {
               commentUserId: sessionUser.id,
               postId: postId as string,
+              postAuthorId: postAuthorId as string,
             };
             response = await createComment(data, otherData);
           } else if (type === "reply") {

@@ -3,11 +3,15 @@
 import { cache } from "react";
 import { db } from "@/db/db";
 import { checkAuth } from "./server-utils";
-import { and, asc, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
-import { ConversationTable, MessageTable, UserTable } from "@/db/schema";
+import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
+import {
+  ConversationTable,
+  MessageTable,
+  NotificationTable,
+  UserTable,
+} from "@/db/schema";
 import { MessageSchema } from "@/lib/validation";
 import { revalidatePath } from "next/cache";
-import { alias } from "drizzle-orm/pg-core";
 
 export const readMessage = async (messageIds: number[]) => {
   try {
@@ -198,11 +202,23 @@ export const sendMessage = async (
     return { error: "Invalid data" };
   }
   try {
-    await db.insert(MessageTable).values({
-      content: validatedMessage.data.content,
-      receiver_id: otherData.receiverId,
-      conversation_id: otherData.conversationId,
-      sender_id: session.user.id,
+    await db.transaction(async (trx) => {
+      const msgContent = await trx
+        .insert(MessageTable)
+        .values({
+          content: validatedMessage.data.content,
+          receiver_id: otherData.receiverId,
+          conversation_id: otherData.conversationId,
+          sender_id: session.user.id,
+        })
+        .returning({ msgContent: MessageTable.content });
+
+      await trx.insert(NotificationTable).values({
+        userId: session.user.id,
+        recipientId: otherData.receiverId,
+        type: "message",
+        msgContent: msgContent[0].msgContent,
+      });
     });
     revalidatePath("/app/direct");
     return { success: "Message sent" };

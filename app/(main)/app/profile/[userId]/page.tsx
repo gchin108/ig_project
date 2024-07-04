@@ -1,6 +1,6 @@
 import ProfileHeader from "./profile-header";
 import { PostGrid } from "./post-grid";
-import { getAllPostsByUserId } from "@/lib/queries";
+import { getAllPostsByUserId } from "@/actions/queries";
 
 type Props = {
   params: {

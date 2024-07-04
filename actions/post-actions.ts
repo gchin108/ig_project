@@ -23,66 +23,107 @@ export const addLike = async (data: {
   type: "post" | "comment";
 }) => {
   try {
-    if (data.type === "post") {
-      await db.insert(LikeTable).values({
-        userId: data.userId,
-        postId: data.postId,
-      });
-      await db.insert(NotificationTable).values({
-        userId: data.userId,
-        postId: data.postId,
-        type: "likePost",
-        recipientId: data.postAuthorId,
-      });
-    } else if (data.type === "comment") {
-      await db.insert(LikeTable).values({
-        userId: data.userId,
-        commentId: data.commentId,
-      });
-    }
+    await db.transaction(async (trx) => {
+      if (data.type === "post") {
+        if (!data.postId || !data.postAuthorId) {
+          throw new Error(
+            "postId and postAuthorId are required for liking a post"
+          );
+        }
+        await trx.insert(LikeTable).values({
+          userId: data.userId,
+          postId: data.postId,
+        });
+        if (data.userId !== data.postAuthorId) {
+          await trx.insert(NotificationTable).values({
+            userId: data.userId,
+            postId: data.postId,
+            type: "likePost",
+            recipientId: data.postAuthorId,
+          });
+        }
+      } else if (data.type === "comment") {
+        if (!data.commentId || !data.commentUserId) {
+          throw new Error(
+            "commentId and commentUserId are required for liking a comment"
+          );
+        }
+        await trx.insert(LikeTable).values({
+          userId: data.userId,
+          commentId: data.commentId,
+        });
+        if (data.userId !== data.commentUserId) {
+          await trx.insert(NotificationTable).values({
+            userId: data.userId,
+            commentId: data.commentId,
+            type: "likeComment",
+            recipientId: data.commentUserId,
+          });
+        }
+      }
+    });
 
     revalidatePath("/app");
-    // revalidatePath(`/app`);
     return { success: `${data.type} liked!` };
   } catch (err) {
-    console.log(err);
+    console.log("Error details:", err);
     return { error: `An error occurred while liking the ${data.type}.` };
   }
 };
+
 export const removeLike = async (data: {
   postId?: string;
+  postAuthorId?: string;
+  commentUserId?: string;
   userId: string;
   commentId?: string;
   type: "post" | "comment";
 }) => {
   try {
-    if (data.type === "post" && typeof data.postId === "string") {
-      await db
-        .delete(LikeTable)
-        .where(
-          and(
-            eq(LikeTable.userId, data.userId),
-            eq(LikeTable.postId, data.postId)
-          )
-        );
-      await db
-        .delete(NotificationTable)
-        .where(
-          and(
-            eq(NotificationTable.userId, data.userId),
-            eq(NotificationTable.postId, data.postId)
-          )
-        );
-    } else if (data.type === "comment" && typeof data.commentId === "string") {
-      await db
-        .delete(LikeTable)
-        .where(
-          and(
-            eq(LikeTable.userId, data.userId),
-            eq(LikeTable.commentId, data.commentId)
-          )
-        );
-    }
+    await db.transaction(async (trx) => {
+      if (data.type === "post" && typeof data.postId === "string") {
+        await trx
+          .delete(LikeTable)
+          .where(
+            and(
+              eq(LikeTable.userId, data.userId),
+              eq(LikeTable.postId, data.postId)
+            )
+          );
+        if (data.userId !== data.postAuthorId) {
+          await trx
+            .delete(NotificationTable)
+            .where(
+              and(
+                eq(NotificationTable.userId, data.userId),
+                eq(NotificationTable.postId, data.postId)
+              )
+            );
+        }
+      } else if (
+        data.type === "comment" &&
+        typeof data.commentId === "string"
+      ) {
+        await trx
+          .delete(LikeTable)
+          .where(
+            and(
+              eq(LikeTable.userId, data.userId),
+              eq(LikeTable.commentId, data.commentId)
+            )
+          );
+        if (data.userId !== data.commentUserId) {
+          await trx
+            .delete(NotificationTable)
+            .where(
+              and(
+                eq(NotificationTable.userId, data.userId),
+                eq(NotificationTable.postId, data.commentId)
+              )
+            );
+        }
+      }
+    });
     revalidatePath("/app");
     return { success: "like removed!" };
   } catch (err) {
@@ -126,6 +167,7 @@ export const createComment = async (
   otherData: {
     commentUserId: string;
     postId: string;
+    postAuthorId: string;
   }
 ) => {
   console.log("content", data);
@@ -135,10 +177,24 @@ export const createComment = async (
     return { error: "Invalid data" };
   }
   try {
-    await db.insert(CommentTable).values({
-      content: validatedReply.data.content,
-      commentUserId: otherData.commentUserId,
-      postId: otherData.postId,
+    await db.transaction(async (trx) => {
+      const commentId = await trx
+        .insert(CommentTable)
+        .values({
+          content: validatedReply.data.content,
+          commentUserId: otherData.commentUserId,
+          postId: otherData.postId,
+        })
+        .returning({ commentId: CommentTable.id });
+      if (otherData.commentUserId !== otherData.postAuthorId) {
+        await trx.insert(NotificationTable).values({
+          userId: otherData.commentUserId,
+          postId: otherData.postId,
+          commentId: commentId[0].commentId,
+          type: "commentPost",
+          recipientId: otherData.postAuthorId,
+        });
+      }
     });
 
     revalidatePath("/app");
@@ -165,12 +221,23 @@ export const createReply = async (
     return { error: "Invalid data" };
   }
   try {
-    await db.insert(CommentTable).values({
-      content: validatedReply.data.content,
-      parentCommentId: otherData.parentId,
-      commentUserId: otherData.commentUserId,
-      postId: otherData.postId,
-      replyReceiver: otherData.replyReceiverId,
+    await db.transaction(async (trx) => {
+      await trx.insert(CommentTable).values({
+        content: validatedReply.data.content,
+        parentCommentId: otherData.parentId,
+        commentUserId: otherData.commentUserId,
+        postId: otherData.postId,
+        replyReceiver: otherData.replyReceiverId,
+      });
+      if (otherData.commentUserId !== otherData.replyReceiverId) {
+        await trx.insert(NotificationTable).values({
+          userId: otherData.commentUserId,
+          commentId: otherData.parentId,
+          msgContent: validatedReply.data.content,
+          type: "commentComment",
+          recipientId: otherData.replyReceiverId,
+        });
+      }
     });
 
     revalidatePath("/app");
@@ -227,14 +294,6 @@ export const updatePost = async (
     return { error: "Invalid data" };
   }
   try {
-    // if (type === "reply") {
-    //   await db
-    //     .update(ReplyTable)
-    //     .set({
-    //       content: validatedData.data.content,
-    //     })
-    //     .where(eq(ReplyTable.id, id));
-    // }
     if (type === "comment") {
       await db
         .update(CommentTable)

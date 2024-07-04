@@ -12,6 +12,7 @@ import {
   uuid,
   unique,
   real,
+  AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -46,7 +47,7 @@ export const userTableRelation = relations(UserTable, ({ many, one }) => ({
   participant2_conversations: many(ConversationTable, {
     relationName: "participant2",
   }),
-  notifications: many(NotificationTable),
+
   actionTriggerer: many(NotificationTable, { relationName: "actionTriggerer" }),
   recipient: many(NotificationTable, { relationName: "recipient" }),
 }));
@@ -79,7 +80,7 @@ export const NotificationTable = pgTable(
       onDelete: "cascade",
     }),
     type: NotificationEnums("type").notNull(),
-    content: text("content"),
+    msgContent: text("msg_content"),
     isRead: boolean("is_read").default(false),
   },
   (t) => ({
@@ -226,6 +227,7 @@ export const postTableRelation = relations(PostTable, ({ one, many }) => ({
   likes: many(LikeTable),
 }));
 
+// TODO: maybe add a reply table because if a user deletes a comment, the replies should be deleted too
 export const CommentTable = pgTable("comments", {
   id: text("id")
     .primaryKey()
@@ -239,7 +241,10 @@ export const CommentTable = pgTable("comments", {
   postId: text("post_id")
     .references(() => PostTable.id, { onDelete: "cascade" })
     .notNull(),
-  parentCommentId: text("parent_comment_id"),
+  parentCommentId: text("parent_comment_id").references(
+    (): AnyPgColumn => CommentTable.id,
+    { onDelete: "cascade" }
+  ),
   replyReceiver: text("replyReceiver_id").references(() => UserTable.id, {
     onDelete: "cascade",
   }),
@@ -270,6 +275,40 @@ export const commentTableRelation = relations(
   })
 );
 
+// export const ReplyTable = pgTable("replies", {
+//   id: serial("id").primaryKey(),
+//   content: text("content").notNull(),
+//   created_at: timestamp("created_at").defaultNow().notNull(),
+//   updated_at: timestamp("updated_at"),
+//   commentId: text("comment_id")
+//     .references(() => CommentTable.id, { onDelete: "cascade" })
+//     .notNull(),
+//   replySenderId: text("replySender_Id")
+//     .references(() => UserTable.id, { onDelete: "cascade" })
+//     .notNull(),
+//   replyReceiver: text("replyReceiver_id").references(() => UserTable.id, {
+//     onDelete: "cascade",
+//   }),
+// });
+
+// export const replyTableRelation = relations(ReplyTable, ({ one, many }) => ({
+//   replySender: one(UserTable, {
+//     fields: [ReplyTable.replySenderId],
+//     references: [UserTable.id],
+//     relationName: "replySender",
+//   }),
+//   replyReceiver: one(UserTable, {
+//     fields: [ReplyTable.replyReceiver],
+//     references: [UserTable.id],
+//     relationName: "replyReceiver",
+//   }),
+//   comment: one(CommentTable, {
+//     fields: [ReplyTable.commentId],
+//     references: [CommentTable.id],
+//   }),
+//   likes: many(LikeTable),
+// }));
+
 export const LikeTable = pgTable(
   "likes",
   {
@@ -284,6 +323,7 @@ export const LikeTable = pgTable(
     commentId: text("comment_id").references(() => CommentTable.id, {
       onDelete: "cascade",
     }),
+
     created_at: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({
@@ -340,8 +380,7 @@ export const sessions = pgTable("session", {
   sessionToken: text("sessionToken").primaryKey(),
   userId: text("userId")
     .notNull()
-    .references(() => UserTable.id, { onDelete: "cascade" })
-    .unique(),
+    .references(() => UserTable.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
 });
 

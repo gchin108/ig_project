@@ -2,9 +2,9 @@ import { auth } from "@/lib/auth";
 
 import PostCard from "@/components/post-card";
 import { CreateInputField } from "@/components/create-input-field";
-import { getPosts } from "@/lib/queries";
 import { Suspense } from "react";
 import Loading from "./loading";
+import { getPosts } from "@/actions/queries";
 
 export default async function Home() {
   const session = await auth();

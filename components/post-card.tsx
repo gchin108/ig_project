@@ -90,7 +90,7 @@ export default function PostCard({ post, mode }: Props) {
         />
       )}
       {!isEditing && (
-        <div className="flex w-full gap-2 p-2 my-2 text-sm">
+        <div className="flex w-full gap-2 p-2 my-2 text-sm" id={post.id}>
           <PostAvatarLogo
             imageUrl={post.postAuthor.image}
             type="post"
@@ -144,6 +144,7 @@ export default function PostCard({ post, mode }: Props) {
                   actionType="create"
                   type="comment"
                   postId={post.id}
+                  postAuthorId={post.authorId}
                   exitCreate={() => {
                     setIsCommenting(false);
                   }}

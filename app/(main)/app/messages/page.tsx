@@ -11,7 +11,7 @@ export default async function Page() {
     return <div>Not authenticated</div>;
   }
   const conversationList = await getMessages(session.user.id);
-  console.log("conversationList", conversationList);
+  // console.log("conversationList", conversationList);
 
   return (
     <div className="max-w-[600px] mx-auto space-y-2">

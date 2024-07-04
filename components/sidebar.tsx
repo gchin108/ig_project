@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getNotifications } from "@/actions/user-action";
+import { getNotifications } from "@/actions/queries";
 type Props = {
   className?: string;
 };
@@ -25,7 +25,7 @@ export const Sidebar = async ({ className }: Props) => {
   );
   const { res } = await getNotifications();
 
-  // console.log(res);
+  console.log(res);
 
   return (
     <div
@@ -60,10 +60,13 @@ export const Sidebar = async ({ className }: Props) => {
                     res?.length && res?.length > 0 ? res?.length : ""
                   }`}</li>
                 </PopoverTrigger>
-                <PopoverContent className="bg-black text-white">
+                <PopoverContent className="bg-black text-white space-y-2 w-full max-w-[500px]">
                   {res?.map((n) => (
-                    <div key={n.id} className="flex gap-2 items-center">
-                      <div className="m-w-[30px]">
+                    <div
+                      key={n.id}
+                      className="flex gap-2 items-center border-b border-slate-200/50 pb-2"
+                    >
+                      <div className="min-w-[30px]">
                         {n.userImage && (
                           <Image
                             src={n.userImage}
@@ -75,12 +78,43 @@ export const Sidebar = async ({ className }: Props) => {
                         )}
                       </div>
                       <div>
-                        <div>{`@${
-                          n.userName
-                        } likes your post "${n.postContent?.slice(
-                          0,
-                          15
-                        )}" `}</div>
+                        <div className="text-sm">
+                          {n.type === "likePost" && (
+                            <Link href={`/app#${n.postId}`}>
+                              {`@${n.userName} likes your post "${n.postContent}"`}
+                            </Link>
+                          )}
+                          {n.type === "likeComment" && (
+                            <Link href={`/app#${n.commentId}`}>
+                              {`@${n.userName} likes your comment "${n.commentContent}"`}
+                            </Link>
+                          )}
+                          {n.type === "commentPost" && (
+                            <Link href={`/app#${n.postId}`}>
+                              {`@${n.userName} comments: `}
+                              {`"${n.commentContent}" `}
+                              <br />
+                              {`on your post "${n.postContent}"`}
+                            </Link>
+                          )}
+                          {n.type === "commentComment" && (
+                            <Link href={`/app#${n.commentId}`}>
+                              {`@${n.userName} replies:"${n.msgContent}"`}
+                              <br />
+                              {`on your comment "${n.commentContent}"`}
+                            </Link>
+                          )}
+                          {n.type === "message" && (
+                            <Link href={`/app/direct/${n.userId}`}>
+                              {`@${n.userName} sends you a message: "${n.msgContent}"`}
+                            </Link>
+                          )}
+                          {n.type === "follow" && (
+                            <Link href={`/app/profile/${n.userId}`}>
+                              {`@${n.userName} follows you`}
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
