@@ -25,10 +25,12 @@ type Props = {
 };
 
 export const CommentCard = ({ comment, mode }: Props) => {
-  const { sessionUser, onSetReplyReceiverId } = usePostContext((state) => ({
-    sessionUser: state.sessionUser,
-    onSetReplyReceiverId: state.onSetReplyReceiverId,
-  }));
+  const { sessionUser, onSetReplyReceiverId, onSetCommentUsername } =
+    usePostContext((state) => ({
+      sessionUser: state.sessionUser,
+      onSetReplyReceiverId: state.onSetReplyReceiverId,
+      onSetCommentUsername: state.onSetCommentUsername,
+    }));
   const [isReplying, setIsReplying] = useState(false);
   const [pending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
@@ -87,6 +89,7 @@ export const CommentCard = ({ comment, mode }: Props) => {
           />
           <div className="pl-2 pr-4 flex flex-col flex-1 gap-[2px]">
             <PostHeader
+              type="comment"
               postAuthorName={
                 comment.commentUser.userName ?? comment.commentUser.name
               }
@@ -122,10 +125,16 @@ export const CommentCard = ({ comment, mode }: Props) => {
                     onClick={() => {
                       setIsReplying(!isReplying);
                       onSetReplyReceiverId("");
+                      onSetCommentUsername("");
+
                       const parentCommentUserId = comment.commentUserId;
-                      flushSync(() =>
-                        onSetReplyReceiverId(parentCommentUserId)
-                      );
+                      flushSync(() => {
+                        onSetReplyReceiverId(parentCommentUserId);
+                        onSetCommentUsername(
+                          comment.commentUser.userName ??
+                            comment.commentUser.name
+                        );
+                      });
                     }}
                   >
                     Reply

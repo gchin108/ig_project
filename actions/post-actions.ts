@@ -232,6 +232,7 @@ export const createReply = async (
       if (otherData.commentUserId !== otherData.replyReceiverId) {
         await trx.insert(NotificationTable).values({
           userId: otherData.commentUserId,
+          postId: otherData.postId,
           commentId: otherData.parentId,
           msgContent: validatedReply.data.content,
           type: "commentComment",

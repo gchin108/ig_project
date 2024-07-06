@@ -27,7 +27,7 @@ export const MessageForm = ({ receiverId, conversationId }: Props) => {
       action={async () => {
         const formData = getValues();
         const result = await trigger();
-        console.log(result);
+        // console.log(result);
         if (!result) {
           return;
         }

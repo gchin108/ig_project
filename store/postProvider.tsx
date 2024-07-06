@@ -16,6 +16,8 @@ type PostState = Props & {
   replyReceiverId: string;
   isPosting: boolean;
   isEditing: boolean;
+  commentUsername: string | null;
+  onSetCommentUsername: (username: string | null) => void;
   onSetReplyReceiverId: (id: string) => void;
   setIsPosting: (isPosting: boolean) => void;
   setIsEditing: (isEditing: boolean) => void;
@@ -44,6 +46,8 @@ const createPostStore = (initProps?: Partial<Props>) => {
     replyReceiverId: "0",
     isPosting: false,
     isEditing: false,
+    commentUsername: "",
+    onSetCommentUsername: (username) => set({ commentUsername: username }),
     onSetReplyReceiverId: (id) => set({ replyReceiverId: id }),
     setIsPosting: (isPosting) => set({ isPosting }),
     setIsEditing: (isEditing) => set({ isEditing }),

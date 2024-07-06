@@ -87,6 +87,7 @@ export const getMessages = cache(async (sessionUserId: string) => {
   const sq2 = db
     .select({
       conversation_id: sq.id,
+      createdAt: sq.created_at,
       participant1_id: sq.participant1_id,
       participant2_id: sq.participant2_id,
       participant1_name: UserTable.name,
@@ -98,6 +99,7 @@ export const getMessages = cache(async (sessionUserId: string) => {
 
   const messages = await db
     .select({
+      createdAt: sq2.createdAt,
       conversation_id: sq2.conversation_id,
       participant1_id: sq2.participant1_id,
       participant2_id: sq2.participant2_id,

@@ -1,3 +1,4 @@
+import { CommentTable, LikeTable, PostTable, UserTable } from "@/db/schema";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -41,3 +42,56 @@ export function getKeyFromUrl(url: string) {
 export function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
+
+export function textSlicer(sentence: string | null, maxLength: number): string {
+  if (sentence === null) return "";
+  if (sentence.length <= maxLength) {
+    return sentence;
+  }
+  return sentence.slice(0, maxLength - 3) + "...";
+}
+type Post = {
+  post: typeof PostTable.$inferSelect & {
+    names?: string[];
+    likeByCurrentUser: boolean;
+    postAuthor: typeof UserTable.$inferSelect & {
+      likes: (typeof LikeTable.$inferSelect)[];
+    };
+    likes: (typeof LikeTable.$inferSelect)[];
+
+    comments: (typeof CommentTable.$inferSelect & {
+      commentUser: typeof UserTable.$inferSelect;
+      replyReceiver: typeof UserTable.$inferSelect | null;
+      likeByCurrentUser: boolean;
+      likes: (typeof LikeTable.$inferSelect)[];
+    })[];
+  };
+};
+type NameEntry = {
+  leaderId: string;
+  leaderName: string | null;
+  likeId: number | null;
+  likePostId: string | null;
+};
+export const mapNamesToPosts = (posts: Post[], names: NameEntry[]): Post[] => {
+  // Create a map to store the names by postId
+  const nameMap: { [key: string]: string[] } = {};
+
+  // Populate the nameMap
+  names.forEach((nameEntry) => {
+    if (nameEntry.likePostId === null || nameEntry.leaderName === null) return;
+    if (!nameMap[nameEntry.likePostId]) {
+      nameMap[nameEntry.likePostId] = [];
+    }
+    nameMap[nameEntry.likePostId].push(nameEntry.leaderName);
+  });
+
+  // Add the names to the posts
+  posts.forEach((post) => {
+    if (nameMap[post.post.id]) {
+      post.post.names = nameMap[post.post.id];
+    }
+  });
+
+  return posts;
+};

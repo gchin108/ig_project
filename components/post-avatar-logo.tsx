@@ -9,7 +9,7 @@ type Props = {
 
 export const PostAvatarLogo = ({ imageUrl, type, userId }: Props) => {
   return (
-    <div className="">
+    <>
       <Link href={`/app/profile/${userId}`}>
         <div className="min-w-[30px] lg:min-w-[40px]">
           <Image
@@ -21,6 +21,6 @@ export const PostAvatarLogo = ({ imageUrl, type, userId }: Props) => {
           />
         </div>
       </Link>
-    </div>
+    </>
   );
 };

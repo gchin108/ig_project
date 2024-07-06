@@ -93,7 +93,7 @@ export const CreateInputField = ({
   return (
     <>
       <form
-        className={cn("flex flex-col w-[97%]", className)}
+        className={cn("flex flex-col w-full", className)}
         action={async () => {
           const formData = getValues();
           const result = await trigger();
@@ -198,8 +198,8 @@ export const CreateInputField = ({
                 className="rounded-full "
                 src={sessionUser.image}
                 alt="profile"
-                width={40}
-                height={40}
+                width={type === "post" ? 40 : 30}
+                height={type === "post" ? 40 : 30}
               />
             </div>
           )}

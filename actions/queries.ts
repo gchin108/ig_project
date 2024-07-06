@@ -1,15 +1,87 @@
 import { cache } from "react";
 import { db } from "@/db/db";
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import {
   CommentTable,
+  FollowerTable,
+  LikeTable,
   NotificationTable,
   PostTable,
   UserTable,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { sleep } from "../lib/utils";
+import { mapNamesToPosts, sleep } from "../lib/utils";
 import { checkAuth } from "@/actions/server-utils";
+
+export const followerLikes = cache(async () => {
+  const session = await checkAuth();
+  if (!session?.user.id) {
+    return { error: "Not authenticated" };
+  }
+  try {
+    const sq2 = db
+      .select({
+        leaderId: FollowerTable.leaderId,
+        leaderName: UserTable.name,
+        leaderUsername: UserTable.userName,
+      })
+      .from(FollowerTable)
+      .where(eq(FollowerTable.followerId, session.user.id))
+      .leftJoin(UserTable, eq(UserTable.id, FollowerTable.leaderId))
+      .as("sq2");
+
+    const result = await db
+      .select({
+        leaderId: sq2.leaderId,
+        leaderName: sq2.leaderName,
+        likeId: LikeTable.id,
+        postId: LikeTable.postId,
+      })
+      .from(sq2)
+      .where(
+        and(eq(LikeTable.userId, sq2.leaderId), isNotNull(LikeTable.postId))
+      )
+      .leftJoin(LikeTable, eq(LikeTable.userId, sq2.leaderId));
+    // const groupedByPostId = result.reduce((acc, curr) => {
+    //   const key = curr.postId === null ? "" : curr.postId;
+    //   if (!acc[key]) {
+    //     acc[key] = [];
+    //   }
+    //   acc[key].push(curr);
+    //   return acc;
+    // }, {});
+
+    return { data: result };
+  } catch (error) {
+    return { error: "Failed to get follower likes" };
+  }
+});
+
+export const getAllPosts = cache(async () => {
+  try {
+    const posts = db
+      .select({
+        id: PostTable.id,
+        content: PostTable.content,
+        created_at: PostTable.created_at,
+        updated_at: PostTable.updated_at,
+        postAuthorId: PostTable.authorId,
+        postAuthorName: UserTable.name,
+        postAuthorUsername: UserTable.userName,
+        imageUrl: PostTable.imageUrl,
+        postAuthorImage: UserTable.image,
+      })
+      .from(PostTable)
+      .orderBy(desc(PostTable.created_at))
+      .leftJoin(UserTable, eq(PostTable.authorId, UserTable.id))
+      .groupBy(PostTable.id, UserTable.id);
+
+    return posts;
+  } catch (error) {
+    console.log(error);
+    // return { error: "Failed to get posts" };
+  }
+});
 
 export const getPosts = cache(async () => {
   // await sleep(2000);
@@ -23,7 +95,11 @@ export const getPosts = cache(async () => {
           likes: true,
         },
       },
-      likes: true,
+      likes: {
+        with: {
+          user: true,
+        },
+      },
       comments: {
         orderBy: (comments, { asc }) => [asc(comments.created_at)],
         with: {
@@ -35,6 +111,7 @@ export const getPosts = cache(async () => {
       },
     },
   });
+
   const normalizedData = posts.map((post) => {
     const commentsWithLikes = post.comments.map((comment) => {
       const likeByCurrentUser =
@@ -50,6 +127,7 @@ export const getPosts = cache(async () => {
       post.likes.find((like) => {
         return like.userId === session?.user.id;
       })?.userId;
+    // const postAuthorIsLeader = post.postAuthor?.
 
     // Assign commentsWithLikes to comments before spreading other properties
     return {
@@ -58,8 +136,23 @@ export const getPosts = cache(async () => {
       comments: commentsWithLikes,
     };
   });
-
-  return normalizedData;
+  if (session?.user.id) {
+    const myLeaderIds = await db
+      .select({
+        leaderId: FollowerTable.leaderId,
+      })
+      .from(FollowerTable)
+      .where(eq(FollowerTable.followerId, session?.user.id));
+    const myLeaderIdList = myLeaderIds.map((leader) => leader.leaderId);
+    // const myLeaderLikePosts =
+    const results = normalizedData.map((post) => {
+      const postAuthorIsLeader = myLeaderIdList.includes(post.authorId);
+      return { ...post, postAuthorIsLeader };
+    });
+    return results;
+  } else {
+    return normalizedData;
+  }
 });
 
 export const getAllPostsByUserId = cache(async (userId: string) => {
@@ -152,58 +245,4 @@ export const getAllPostsByUserId = cache(async (userId: string) => {
   const user = { numberOfPosts, followerList, followingList, ...userData };
 
   return { user, posts: normalizedData };
-});
-
-export const getNotifications = cache(async () => {
-  const session = await checkAuth();
-  if (!session?.user.id) {
-    return { error: "Not authenticated" };
-  }
-  try {
-    const sq = db
-      .select({
-        id: NotificationTable.id,
-        userId: NotificationTable.userId,
-        userName: UserTable.userName,
-        userImage: UserTable.image,
-        postId: NotificationTable.postId,
-        postContent: PostTable.content,
-        commentId: NotificationTable.commentId,
-        isRead: NotificationTable.isRead,
-        recipientId: NotificationTable.recipientId,
-        createAt: NotificationTable.created_at,
-        msgContent: NotificationTable.msgContent,
-        type: NotificationTable.type,
-      })
-      .from(NotificationTable)
-      .where(eq(NotificationTable.recipientId, session.user.id))
-      .leftJoin(UserTable, eq(NotificationTable.userId, UserTable.id))
-      .leftJoin(PostTable, eq(NotificationTable.postId, PostTable.id))
-
-      .as("sq");
-    const res = await db
-      .select({
-        id: sq.id,
-        userId: sq.userId,
-        userName: sq.userName,
-        userImage: sq.userImage,
-        postId: sq.postId,
-        postContent: sq.postContent,
-        commentId: sq.commentId,
-        commentContent: CommentTable.content,
-        recipientId: sq.recipientId,
-        msgContent: sq.msgContent,
-        isRead: sq.isRead,
-        type: sq.type,
-      })
-      .from(sq)
-      .orderBy(desc(sq.createAt))
-      .where(eq(sq.recipientId, session.user.id))
-      .leftJoin(CommentTable, eq(sq.commentId, CommentTable.id));
-
-    return { res, success: true };
-  } catch (error) {
-    console.log(error);
-    return { error: true };
-  }
 });
