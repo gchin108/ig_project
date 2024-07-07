@@ -43,7 +43,7 @@ export function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-export function textSlicer(sentence: string | null, maxLength: number): string {
+export function textSlicer(sentence: string | null, maxLength = 30): string {
   if (sentence === null) return "";
   if (sentence.length <= maxLength) {
     return sentence;

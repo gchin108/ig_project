@@ -77,8 +77,7 @@ export const NotiDropDown = ({ res }: Props) => {
                       >
                         <Link href={`/app#${n.postId}`} className="">
                           {`@${n.userName} likes your post "${textSlicer(
-                            n.postContent,
-                            24
+                            n.postContent
                           )}"`}
                         </Link>
                       </Button>
@@ -90,7 +89,9 @@ export const NotiDropDown = ({ res }: Props) => {
                         className="p-0"
                       >
                         <Link href={`/app#${n.commentId}`}>
-                          {`@${n.userName} likes your comment "${n.commentContent}"`}
+                          {`@${n.userName} likes your comment "${textSlicer(
+                            n.commentContent
+                          )}"`}
                         </Link>
                       </Button>
                     )}
@@ -102,9 +103,9 @@ export const NotiDropDown = ({ res }: Props) => {
                       >
                         <Link href={`/app#${n.postId}`}>
                           {`@${n.userName} comments: `}
-                          {`"${n.commentContent}" `}
+                          {`"${textSlicer(n.commentContent)}" `}
                           <br />
-                          {`on your post "${n.postContent}"`}
+                          {`on your post "${textSlicer(n.postContent)}"`}
                         </Link>
                       </Button>
                     )}
@@ -115,9 +116,11 @@ export const NotiDropDown = ({ res }: Props) => {
                         onClick={() => handleDeleteNoti(n.id)}
                       >
                         <Link href={`/app#${n.postId}`}>
-                          {`@${n.userName} replies:"${n.msgContent}"`}
+                          {`@${n.userName} replies:"${textSlicer(
+                            n.msgContent
+                          )}"`}
                           <br />
-                          {`on your comment "${n.commentContent}"`}
+                          {`on your comment "${textSlicer(n.commentContent)}"`}
                         </Link>
                       </Button>
                     )}
@@ -131,8 +134,7 @@ export const NotiDropDown = ({ res }: Props) => {
                           <span className="max-w-[400px] break-words">{`@${
                             n.userName
                           } sends you a message: "${textSlicer(
-                            n.msgContent,
-                            15
+                            n.msgContent
                           )}"`}</span>
                         </Link>
                       </Button>

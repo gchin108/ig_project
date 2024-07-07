@@ -16,7 +16,7 @@ export default async function Page() {
   return (
     <div className="max-w-[600px] mx-auto space-y-2">
       {conversationList.length === 0 ? (
-        <p>No messages yet</p>
+        <p>No messages yet .</p>
       ) : (
         conversationList.map((c) => {
           return (
