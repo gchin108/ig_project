@@ -208,9 +208,7 @@ export const CreateInputField = ({
               id="content"
               className="outline-none border-b border-slate-200/50 focus:border-slate-200  px-4 py-2  whitespace-normal resize-none no-scrollbar"
               placeholder={
-                actionType === "create" && type === "post"
-                  ? "What's on your mind?"
-                  : actionType === "create" && type === "comment"
+                actionType === "create" && type === "comment"
                   ? "add a comment"
                   : "add a reply"
               }
@@ -248,37 +246,15 @@ export const CreateInputField = ({
               >
                 cancel
               </Button>
-              {type === "post" && actionType === "create" && (
-                <>
-                  <input
-                    id="file"
-                    type="file"
-                    onChange={(e) => {
-                      const files = e.target.files;
-                      if (files) {
-                        setFile(files[0]);
-                      }
-                    }}
-                    accept="image/png, image/jpeg"
-                    style={{ display: "none" }} // Hide the default file input
-                  />
-                  <label
-                    htmlFor="file"
-                    className="custom-file-upload cursor-pointer border border-slate-200/50 p-2 rounded-xl hover:bg-slate-200"
-                  >
-                    <Image src="/photoIcon.svg" alt="" width={20} height={20} />{" "}
-                    {/* Use any icon here */}
-                  </label>
-                  {file && <p> {file.name.slice(0, 20)}</p>}
-                </>
-              )}
 
               <Button
                 variant="secondary"
                 className=" rounded-full "
                 disabled={isSubmitting}
               >
-                post
+                {actionType === "create" && type === "comment"
+                  ? "add a comment"
+                  : "add a reply"}
               </Button>
             </div>
           )}

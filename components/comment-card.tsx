@@ -120,7 +120,7 @@ export const CommentCard = ({ comment, mode }: Props) => {
                   sessionUserId={sessionUser.id}
                 />
                 <p>{comment.likes.length}</p>
-                {sessionUser.id && (
+                {sessionUser.id && sessionUser.id !== comment.commentUserId && (
                   <button
                     onClick={() => {
                       setIsReplying(!isReplying);
@@ -146,11 +146,7 @@ export const CommentCard = ({ comment, mode }: Props) => {
             {isReplying && sessionUser && (
               <div className="mt-4">
                 <CreateInputField
-                  type={
-                    comment.commentUserId !== sessionUser.id //if replying to your own comment, it becomes a comment to the post instead
-                      ? "reply"
-                      : "comment"
-                  }
+                  type="reply"
                   postId={comment.postId}
                   actionType="create"
                   exitCreate={() => {

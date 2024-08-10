@@ -20,6 +20,7 @@ export const getNotifications = cache(async () => {
     const sq = db
       .select({
         id: NotificationTable.id,
+        name: UserTable.name,
         userId: NotificationTable.userId,
         userName: UserTable.userName,
         userImage: UserTable.image,
@@ -41,6 +42,7 @@ export const getNotifications = cache(async () => {
     const res = await db
       .select({
         id: sq.id,
+        name: sq.name,
         userId: sq.userId,
         userName: sq.userName,
         userImage: sq.userImage,

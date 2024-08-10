@@ -9,7 +9,11 @@ import { useState, useTransition } from "react";
 import { CreateInputField } from "./create-input-field";
 import { DotActionButton } from "./dot-action-button";
 import { addLike, deletePost, removeLike } from "@/actions/post-actions";
-import { HeartFilledIcon, BookmarkFilledIcon } from "@radix-ui/react-icons";
+import {
+  HeartFilledIcon,
+  BookmarkFilledIcon,
+  ChatBubbleIcon,
+} from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { LikeData } from "@/types/general-types";
 import { Button } from "./ui/button";
@@ -20,6 +24,7 @@ import {
   MoreVerticalIcon,
   HeartIcon,
   MessageCircleIcon,
+  MessageCircleOffIcon,
   SendIcon,
   BookmarkIcon,
 } from "lucide-react";
@@ -181,7 +186,12 @@ export default function PostCard({ post, mode }: Props) {
                 setShowComments(!showComments);
               }}
             >
-              <MessageCircleIcon className="  h-[30px] w-[50px]" />
+              {
+                <MessageCircleIcon
+                  className={`h-[30px] w-[50px] `}
+                  fill={showComments ? "white" : "black"}
+                />
+              }
             </button>
             <SendIcon className="  h-[30px] w-[50px]" />
           </div>
@@ -203,7 +213,7 @@ export default function PostCard({ post, mode }: Props) {
         )}
         <>
           {isEditing && (
-            <CreateInputField
+            <NewInput
               type="post"
               actionType="edit"
               exitCreate={() => {
@@ -262,7 +272,7 @@ export default function PostCard({ post, mode }: Props) {
           );
         })}
       {showComments && (
-        <div className="mt-4">
+        <div className="mt-4 mx-4">
           <NewInput
             actionType="create"
             type="comment"

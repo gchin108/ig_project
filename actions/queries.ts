@@ -13,6 +13,23 @@ import { auth } from "@/lib/auth";
 import { mapNamesToPosts, sleep } from "../lib/utils";
 import { checkAuth } from "@/actions/server-utils";
 
+export const getLikedPostsByUserId = cache(async (userId: string) => {
+  try {
+    const res = await db
+      .select({
+        name: UserTable.name,
+        content: PostTable.content,
+      })
+      .from(LikeTable)
+      .where(eq(LikeTable.userId, userId))
+      .leftJoin(PostTable, eq(PostTable.id, LikeTable.postId))
+      .leftJoin(UserTable, eq(UserTable.id, LikeTable.userId));
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 export const followerLikes = cache(async () => {
   const session = await checkAuth();
   if (!session?.user.id) {
@@ -57,37 +74,11 @@ export const followerLikes = cache(async () => {
   }
 });
 
-export const getAllPosts = cache(async () => {
-  try {
-    const posts = db
-      .select({
-        id: PostTable.id,
-        content: PostTable.content,
-        created_at: PostTable.created_at,
-        updated_at: PostTable.updated_at,
-        postAuthorId: PostTable.authorId,
-        postAuthorName: UserTable.name,
-        postAuthorUsername: UserTable.userName,
-        imageUrl: PostTable.imageUrl,
-        postAuthorImage: UserTable.image,
-      })
-      .from(PostTable)
-      .orderBy(desc(PostTable.created_at))
-      .leftJoin(UserTable, eq(PostTable.authorId, UserTable.id))
-      .groupBy(PostTable.id, UserTable.id);
-
-    return posts;
-  } catch (error) {
-    console.log(error);
-    // return { error: "Failed to get posts" };
-  }
-});
-
 export const getPosts = cache(async () => {
   // await sleep(2000);
   const session = await auth();
   const posts = await db.query.PostTable.findMany({
-    orderBy: (post, { asc }) => [asc(post.created_at)],
+    orderBy: (post, { desc }) => [desc(post.created_at)],
 
     with: {
       postAuthor: {
