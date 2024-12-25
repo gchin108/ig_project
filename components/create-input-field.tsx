@@ -99,7 +99,7 @@ export const CreateInputField = ({
           const result = await trigger();
           console.log(result);
           if (!result || !sessionUser || !sessionUser.id) {
-            console.error("Session user ID is not defined");
+            alert("Please log in to comment(dm Giorgio your gamil");
             return;
           }
           const data = {
@@ -183,6 +183,7 @@ export const CreateInputField = ({
 
             response = await createReply(data, otherData);
           }
+
           if (response?.error) {
             toast.error(response.error);
           }

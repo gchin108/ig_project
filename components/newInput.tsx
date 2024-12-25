@@ -17,6 +17,7 @@ import { autoResize, cn } from "@/lib/utils";
 import { usePostContext } from "@/store/postProvider";
 import { Textarea } from "./ui/textarea";
 import { getPresignedImageUrl } from "@/actions/server-utils";
+import { logIn } from "@/actions/auth-actions";
 
 type Props = {
   commentId?: string;
@@ -95,10 +96,14 @@ export const NewInput = ({
       <form
         className="flex flex-col gap-1"
         action={async () => {
+          if (!sessionUser || !sessionUser.id) {
+            logIn();
+            return;
+          }
           const formData = getValues();
           const result = await trigger();
           // console.log(result);
-          if (!result || !sessionUser || !sessionUser.id) {
+          if (!result) {
             console.error("Session user ID is not defined");
             return;
           }
