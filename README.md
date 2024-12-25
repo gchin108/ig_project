@@ -1,4 +1,4 @@
-My Instagram clone project
+My Instagram clone project!
 
 ## Getting Started
 
