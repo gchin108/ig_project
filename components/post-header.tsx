@@ -1,4 +1,5 @@
 import { cn, timeSince } from "@/lib/utils";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
   createdAtTime: Date | null;
   classname?: string;
   type: "post" | "comment";
+  userId: string;
 };
 export const PostHeader = ({
   children,
@@ -16,6 +18,7 @@ export const PostHeader = ({
   createdAtTime,
   classname,
   type,
+  userId,
 }: Props) => {
   const [createdTime, setCreatedTime] = useState<Date | null>(null);
   const [editedTime, setEditedTime] = useState<Date | null>(null);
@@ -33,7 +36,9 @@ export const PostHeader = ({
       {type === "comment" && (
         <div className={cn(`flex items-center justify-between`, classname)}>
           <div className="flex gap-4 items-center">
-            <p className="font-bold ">{postAuthorName}</p>
+            <Link href={`/app/profile/${userId}`}>
+              <p className="font-bold ">{postAuthorName}</p>
+            </Link>
             <p className="text-slate-200/50 text-xs">
               {timeSince(editedTime ? editedTime : createdTime)}
               {editedTime ? " (edited) " : ""}

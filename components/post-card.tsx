@@ -290,6 +290,7 @@ export default function PostCard({ post, mode }: Props) {
         updatedAtTime={post.updated_at}
         createdAtTime={post.created_at}
         classname={`ml-4 mt-2 ${mode === "modal" && "text-left"}`}
+        userId={post.authorId}
       />
     </>
   );

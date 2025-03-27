@@ -106,6 +106,7 @@ export default function PostCard({ post, mode }: Props) {
               postAuthorName={post.postAuthor.userName ?? post.postAuthor.name}
               updatedAtTime={post.updated_at}
               createdAtTime={post.created_at}
+              userId={post.authorId}
             >
               {post.authorId === sessionUser.id && (
                 <DotActionButton
