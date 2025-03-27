@@ -105,20 +105,21 @@ export default function PostCard({ post, mode }: Props) {
         className="flex items-center justify-between px-2 mt-10"
         id={post.id}
       >
-        <div className="flex items-center gap-4">
+        <Link
+          className="flex items-center gap-4"
+          href={`/app/profile/${post.postAuthor.id}`}
+        >
           {post.postAuthor.image && (
-            <Link href={`/app/profile/${post.postAuthor.id}`}>
-              <Image
-                src={post.postAuthor.image}
-                alt={`${post.authorId} profile picture`}
-                width={40}
-                height={40}
-                className="rounded-full object-cover"
-              />
-            </Link>
+            <Image
+              src={post.postAuthor.image}
+              alt={`${post.authorId} profile picture`}
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
+            />
           )}
-          <div>
-            <div className="flex items-center gap-2 ">
+          <>
+            <div className="flex items-center gap-2 cursor-pointer">
               <p className=" ">
                 <span className="font-bold">
                   {" "}
@@ -136,8 +137,8 @@ export default function PostCard({ post, mode }: Props) {
               </p>
             </div>
             {/* <p className="text-slate-200/50 text-sm">Marley</p> */}
-          </div>
-        </div>
+          </>
+        </Link>
         {sessionUser.id === post.postAuthor.id ? (
           <DotActionButton
             onDelete={handleDelete}

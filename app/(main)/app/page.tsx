@@ -10,7 +10,7 @@ import {
   getLikedPostsByUserId,
   getPosts,
 } from "@/actions/queries";
-import { AllPosts } from "@/components/all-posts";
+// import { AllPosts } from "@/components/all-posts";
 import { NewInput } from "@/components/newInput";
 
 export default async function Home() {

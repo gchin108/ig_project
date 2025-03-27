@@ -57,7 +57,7 @@ export const AllPosts = ({ post, mode }: Props) => {
   }
   return (
     <>
-      {/*header start*/}
+      header start
       <div className="flex items-center justify-between px-2 mt-10">
         <div className="flex items-center gap-4">
           {post.postAuthorImage && (
@@ -74,7 +74,7 @@ export const AllPosts = ({ post, mode }: Props) => {
           <div>
             <div className="flex items-center gap-2 ">
               <p className=" ">
-                <span className="font-bold">
+                <span className="font-bold ">
                   {" "}
                   <Link href={`/app/profile/${post.postAuthorId}`}>
                     {post.postAuthorName ?? post.postAuthorName}
@@ -158,7 +158,6 @@ export const AllPosts = ({ post, mode }: Props) => {
       </div>
       {/*author note end*/}
       {/*comments start*/}
-
       {/*comments end*/}
       {post.postAuthorId && (
         <PostHeader

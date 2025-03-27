@@ -11,9 +11,9 @@ const main = async () => {
   try {
     console.log("Seeding database");
 
-    await db.delete(schema.UserTable);
-    await db.delete(schema.PostTable);
-    await db.delete(schema.CommentTable);
+    // await db.delete(schema.UserTable);
+    // await db.delete(schema.PostTable);
+    // await db.delete(schema.CommentTable);
 
     // await db.insert(schema.UserTable).values({
     //   id: "1",
