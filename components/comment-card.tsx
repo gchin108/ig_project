@@ -95,6 +95,7 @@ export const CommentCard = ({ comment, mode }: Props) => {
               }
               updatedAtTime={comment.updated_at}
               createdAtTime={comment.created_at}
+              userId={comment.commentUserId}
             >
               {comment.commentUserId === sessionUser.id && (
                 <DotActionButton

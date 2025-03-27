@@ -158,12 +158,15 @@ export const AllPosts = ({ post, mode }: Props) => {
       {/*comments start*/}
 
       {/*comments end*/}
-      <PostHeader
-        type="post"
-        updatedAtTime={post.updated_at}
-        createdAtTime={post.created_at}
-        classname={`ml-4 ${mode === "modal" && "text-left"}`}
-      />
+      {post.postAuthorId && (
+        <PostHeader
+          type="post"
+          updatedAtTime={post.updated_at}
+          createdAtTime={post.created_at}
+          classname={`ml-4 ${mode === "modal" && "text-left"}`}
+          userId={post.postAuthorId}
+        />
+      )}
     </>
   );
 };
