@@ -73,12 +73,14 @@ export const AllPosts = ({ post, mode }: Props) => {
           )}
           <div>
             <div className="flex items-center gap-2 ">
-              <p className=" ">
-                <span className="font-bold">
-                  {" "}
-                  {post.postAuthorName ?? post.postAuthorName}
-                </span>
-              </p>
+              <Link href={`/app/profile/${post.postAuthorId}`}>
+                <p className=" ">
+                  <span className="font-bold">
+                    {" "}
+                    {post.postAuthorName ?? post.postAuthorName}
+                  </span>
+                </p>
+              </Link>
               <DotIcon />
               <p className="tracking-wider leading-3"> Following</p>
             </div>
